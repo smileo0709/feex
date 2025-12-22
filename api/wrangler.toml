@@ -1,0 +1,12 @@
+{
+name = "predictx-api"
+main = "src/index.js"
+compatibility_date = "2025-12-01"
+  "d1_databases": [
+    {
+      "binding": "predictx_db",
+      "database_name": "predictx_db",
+      "database_id": "c1480cb1-5188-4eea-9540-f937ed0c2678"
+    }
+  ]
+}
