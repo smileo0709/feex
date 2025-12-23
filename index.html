@@ -848,5 +848,20 @@
     await loadFeed();
   })();
 </script>
+<button id="btnGoogle">Continue with Google</button>
+<script>
+document.getElementById("btnGoogle").onclick = () => {
+  location.href = "https://api.feex.win/api/auth/google/start";
+};
+
+// callback 回來會帶 #token=...
+const hash = new URLSearchParams(location.hash.slice(1));
+const token = hash.get("token");
+if (token) {
+  localStorage.setItem("token", token);
+  history.replaceState(null, "", "/");
+}
+</script>
+
 </body>
 </html>
