@@ -288,440 +288,112 @@
 </div>
 
 <script>
-  // ====== CONFIG ======
-  const API_BASE = "https://api.feex.win"; // ← 確認這是你的 Worker 自訂網域
-  document.getElementById("apiBase").textContent = API_BASE.replace("https://","");
+/* =========================
+   基本設定
+========================= */
+const API_BASE = "https://api.feex.win";
 
-  // TAGS
-  const TAGS = ["all","sport","news","politics","tech","finance","ent","games"];
-  const TAG_LABEL = {all:"全部", sport:"運動", news:"時勢", politics:"政治", tech:"科技", finance:"金融", ent:"娛樂", games:"遊戲"};
+/* =========================
+   1️⃣ 接住 Google OAuth 回傳的 token
+   Google callback 會導到：
+   https://feex.win/#token=xxxxx
+========================= */
+(function handleOAuthRedirect() {
+  if (location.hash.startsWith("#token=")) {
+    const token = decodeURIComponent(location.hash.slice(7));
+    localStorage.setItem("token", token);
+    // 清掉網址上的 token（比較乾淨）
+    history.replaceState(null, "", location.pathname);
+  }
+})();
 
-  // ====== STATE ======
-  let state = {
-    page: "feed",
-    tag: "all",
-    hot: "day",
-    q: "",
-    token: localStorage.getItem("token") || "",
-    me: null,
+/* =========================
+   2️⃣ 取得目前 token
+========================= */
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+/* =========================
+   3️⃣ 統一的 API fetch（自動帶 Authorization）
+========================= */
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
   };
 
-  // ====== HELPERS ======
-  const $ = (id)=>document.getElementById(id);
-  function show(el){ el.classList.remove("hide"); }
-  function hide(el){ el.classList.add("hide"); }
-  function setMsg(el, text, kind="info"){
-    el.textContent = text;
-    el.className = "notice" + (kind==="err" ? " err" : kind==="ok" ? " okbox" : "");
-    show(el);
-  }
-  function clearMsg(el){ hide(el); el.textContent=""; }
-
-  async function api(path, opts={}){
-    const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
-    if(state.token) headers["Authorization"] = "Bearer " + state.token;
-    const res = await fetch(API_BASE + path, Object.assign({}, opts, {headers}));
-    const data = await res.json().catch(()=>({ok:false,error:"Bad JSON"}));
-    return {res, data};
+  if (token) {
+    headers["Authorization"] = "Bearer " + token;
   }
 
-  function fmtTime(ms){
-    try { return new Date(Number(ms)).toLocaleString(); } catch { return ""; }
+  const res = await fetch(API_BASE + path, {
+    ...options,
+    headers,
+  });
+
+  const data = await res.json();
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.error || "API error");
   }
+  return data;
+}
 
-  // ====== NAV ======
-  function go(page){
-    state.page = page;
-    ["feed","predict","publish","profile","rules"].forEach(p=>{
-      const el = $("page_"+p);
-      if(!el) return;
-      if(p===page) el.classList.remove("hide");
-      else el.classList.add("hide");
-    });
-    $("feedToolbar").style.display = page==="feed" ? "block" : "none";
-    $("pageTitle").textContent =
-      page==="feed" ? "首頁" :
-      page==="predict" ? "未來事件預測" :
-      page==="publish" ? "看廣告拿金幣" :
-      page==="profile" ? "個人檔案" : "規則 & 設定";
-
-    if(page==="profile") loadMe();
-    if(page==="feed") refresh();
+/* =========================
+   4️⃣ 取得目前登入使用者
+========================= */
+async function loadMe() {
+  try {
+    const res = await apiFetch("/api/me");
+    renderUser(res.user);
+  } catch (e) {
+    renderGuest();
   }
+}
 
-  // ====== AUTH MODAL ======
-  function openAuth(){ $("authBackdrop").style.display="flex"; clearMsg($("authMsg")); }
-  function closeAuth(){ $("authBackdrop").style.display="none"; }
-  function closeDetail(){ $("detailBackdrop").style.display="none"; }
+/* =========================
+   5️⃣ 登出
+========================= */
+function logout() {
+  localStorage.removeItem("token");
+  location.reload();
+}
 
-  async function doRegister(){
-    clearMsg($("authMsg"));
-    const email = $("email").value.trim();
-    const password = $("password").value;
-    if(!email || !email.includes("@")) return setMsg($("authMsg"), "Email 格式不正確", "err");
-    if((password||"").length < 6) return setMsg($("authMsg"), "密碼至少 6 碼", "err");
+/* =========================
+   6️⃣ Google 登入（按鈕會用到）
+========================= */
+function loginWithGoogle() {
+  window.location.href = API_BASE + "/api/auth/google/start";
+}
 
-    const {data} = await api("/api/register", {method:"POST", body: JSON.stringify({email,password})});
-    if(!data.ok) return setMsg($("authMsg"), data.error || "註冊失敗", "err");
-    setMsg($("authMsg"), "註冊成功，請登入", "ok");
-  }
+/* =========================
+   7️⃣ UI Render（你可以依自己 HTML 改）
+========================= */
+function renderUser(user) {
+  document.getElementById("auth-area").innerHTML = `
+    <div>
+      <b>${user.nick}</b>（Tier ${user.tier}）
+      ｜GC：${user.gc}
+      <button onclick="logout()">登出</button>
+    </div>
+  `;
+}
 
-  async function doLogin(){
-    clearMsg($("authMsg"));
-    const email = $("email").value.trim();
-    const password = $("password").value;
-    if(!email || !password) return setMsg($("authMsg"), "請輸入 Email 與密碼", "err");
+function renderGuest() {
+  document.getElementById("auth-area").innerHTML = `
+    <button onclick="loginWithGoogle()">使用 Google 登入</button>
+  `;
+}
 
-    const {data} = await api("/api/login", {method:"POST", body: JSON.stringify({email,password})});
-    if(!data.ok) return setMsg($("authMsg"), data.error || "登入失敗", "err");
-
-    state.token = data.token;
-    localStorage.setItem("token", state.token);
-    await loadMe();
-    setStatus();
-    setMsg($("authMsg"), "登入成功！", "ok");
-    setTimeout(()=>closeAuth(), 600);
-  }
-
-  function logout(){
-    state.token = "";
-    state.me = null;
-    localStorage.removeItem("token");
-    setStatus();
-    alert("已登出");
-  }
-
-  // Google OAuth start (你後端若有路由就改這裡)
-  function googleStart(){
-    // 例：window.location.href = API_BASE + "/api/auth/google/start";
-    alert("如果你後端已做 Google OAuth，請把 googleStart() 改成導向你的 /api/auth/google/start");
-  }
-
-  // ====== ME ======
-  function setStatus(){
-    const t = state.me ? `已登入：${state.me.nick}（Tier ${state.me.tier} / GC ${state.me.gc}）` : "未登入";
-    $("statusText").textContent = t;
-    $("statusText").className = state.me ? "ok" : "muted";
-  }
-
-  async function loadMe(){
-    if(!state.token) { state.me=null; setStatus(); return; }
-    const {data} = await api("/api/me", {method:"GET"});
-    if(!data.ok){
-      // token 失效
-      state.token=""; localStorage.removeItem("token");
-      state.me=null; setStatus();
-      return;
-    }
-    state.me = data.user;
-    setStatus();
-    // fill profile
-    $("meNick").value = state.me.nick || "";
-    $("meBio").value = state.me.bio || "";
-    $("meTier").value = state.me.tier || 1;
-    $("meLevel").value = state.me.level || 1;
-    $("meWin").value = state.me.winRate ?? 50;
-    $("meGC").value = state.me.gc ?? 0;
-  }
-
-  async function saveMe(){
-    if(!state.token) return alert("請先登入");
-    clearMsg($("meMsg"));
-    const body = {
-      nick: $("meNick").value.trim(),
-      bio: $("meBio").value.trim(),
-      tier: Number($("meTier").value||1),
-      level: Number($("meLevel").value||1),
-      winRate: Number($("meWin").value||50),
-    };
-    const {data} = await api("/api/me", {method:"PATCH", body: JSON.stringify(body)});
-    if(!data.ok) return setMsg($("meMsg"), data.error || "儲存失敗", "err");
-    state.me = data.user;
-    $("meGC").value = state.me.gc ?? 0;
-    setStatus();
-    setMsg($("meMsg"), "已儲存", "ok");
-  }
-
-  // ====== CLAIM AD ======
-  async function claimAd(){
-    $("claimMsg").classList.add("hide");
-    if(!state.token) return alert("請先登入");
-    const {data} = await api("/api/claim-ad", {method:"POST", body: "{}"});
-    if(!data.ok){
-      if(data.error==="Cooldown"){
-        const m = Math.ceil((data.remainingMs||0)/60000);
-        return setMsg($("claimMsg"), `冷卻中，約 ${m} 分鐘後可再領`, "err");
-      }
-      return setMsg($("claimMsg"), data.error || "領取失敗", "err");
-    }
-    await loadMe();
-    setMsg($("claimMsg"), `成功 +${data.reward} GC，目前餘額：${data.newBalance}`, "ok");
-  }
-
-  // ====== FEED ======
-  function setHot(hot, btn){
-    state.hot = hot;
-    document.querySelectorAll("[data-hot]").forEach(x=>x.classList.remove("active"));
-    btn.classList.add("active");
-    refresh();
-  }
-
-  function renderTags(){
-    const grid = $("tagGrid");
-    grid.innerHTML = "";
-    TAGS.forEach(t=>{
-      const b = document.createElement("button");
-      b.className = "tag" + (state.tag===t ? " active":"");
-      b.textContent = TAG_LABEL[t] || t;
-      b.onclick = ()=>{ state.tag=t; renderTags(); refresh(); };
-      grid.appendChild(b);
-    });
-  }
-
-  function ellipsize(text, n=120){
-    text = String(text||"");
-    if(text.length<=n) return {short:text, cut:false};
-    return {short:text.slice(0,n)+"…", cut:true};
-  }
-
-  function postEl(p){
-    const div = document.createElement("div");
-    div.className = "post";
-
-    const av = document.createElement("div");
-    av.className = "avatar";
-
-    const main = document.createElement("div");
-
-    const top = document.createElement("div");
-    top.className = "postTop";
-    top.innerHTML = `
-      <div>
-        <span class="nick">@${(p.ownerNick || "unknown")}</span>
-        <span class="meta"> · ${TAG_LABEL[p.tag]||p.tag} · ${p.settleDate}</span>
-      </div>
-      <span class="meta">${fmtTime(p.createdAt)}</span>
-    `;
-
-    const title = document.createElement("div");
-    title.className = "title";
-    title.textContent = p.title;
-
-    const cover = document.createElement("div");
-    cover.className = "cover";
-    if(p.coverUrl){
-      const img = document.createElement("img");
-      img.src = p.coverUrl;
-      img.alt = "cover";
-      cover.appendChild(img);
-    }else{
-      cover.innerHTML = `<span class="muted">（無封面）</span>`;
-    }
-
-    const tc = document.createElement("div");
-    tc.style.marginTop = "10px";
-    tc.innerHTML = (p.topComments||[]).map((c,idx)=>{
-      const {short,cut} = ellipsize(c.text, 90);
-      const id = `c_${p.id}_${idx}`;
-      return `
-        <div class="meta" style="margin:6px 0 0">
-          ❤️ ${c.likes} · <b>@${c.author}</b>：
-          <span id="${id}" class="${cut?'twolines':''}">${short}</span>
-          ${cut ? `<span class="more" onclick="expand('${id}', ${JSON.stringify(c.text).replace(/"/g,'&quot;')})">顯示更多</span>` : ""}
-        </div>
-      `;
-    }).join("");
-
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    actions.innerHTML = `
-      <button class="actionBtn" title="詳細" onclick="openDetail('${p.id}')">💬 ${p.commentsCount||0}</button>
-      <span>❤️ ${p.likes||0}</span>
-      <span>🗳️ ${p.totalVotes||0}</span>
-      <button class="actionBtn" onclick="openDetail('${p.id}')">查看完整</button>
-    `;
-
-    main.appendChild(top);
-    main.appendChild(title);
-    main.appendChild(cover);
-    main.appendChild(tc);
-    main.appendChild(actions);
-
-    div.appendChild(av);
-    div.appendChild(main);
-    return div;
-  }
-
-  // 用於「顯示更多」
-  window.expand = (id, fullText)=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.classList.remove("twolines");
-    el.textContent = fullText;
-    // 移除旁邊的「顯示更多」
-    const sib = el.nextElementSibling;
-    if(sib && sib.classList.contains("more")) sib.remove();
-  };
-
-  async function refresh(){
-    if(state.page!=="feed") return;
-    state.q = $("q").value.trim();
-
-    const params = new URLSearchParams();
-    params.set("tag", state.tag);
-    params.set("hot", state.hot);
-    if(state.q) params.set("q", state.q);
-
-    const feed = $("page_feed");
-    feed.innerHTML = `<div style="padding:14px" class="muted">載入中...</div>`;
-
-    const {data} = await api("/api/predictions?"+params.toString(), {method:"GET"});
-    if(!data.ok){
-      feed.innerHTML = `<div style="padding:14px" class="danger">載入失敗：${data.error||"error"}</div>`;
-      return;
-    }
-
-    // ⚠️ 需要後端回 ownerNick。若你後端尚未做，我下面會說要改哪裡。
-    feed.innerHTML = "";
-    (data.predictions||[]).forEach(p=> feed.appendChild(postEl(p)));
-    if((data.predictions||[]).length===0){
-      feed.innerHTML = `<div style="padding:14px" class="muted">目前沒有內容</div>`;
-    }
-  }
-
-  // ====== DETAIL ======
-  async function openDetail(predId){
-    $("detailBackdrop").style.display = "flex";
-    $("detailTitle").textContent = "載入中...";
-    $("detailBody").innerHTML = `<div class="muted">loading...</div>`;
-
-    const {data} = await api("/api/predictions/"+predId, {method:"GET"});
-    if(!data.ok){
-      $("detailTitle").textContent = "錯誤";
-      $("detailBody").innerHTML = `<div class="danger">${data.error||"error"}</div>`;
-      return;
-    }
-    const p = data.prediction;
-    $("detailTitle").textContent = p.title;
-
-    const cover = p.coverUrl ? `<div class="cover" style="margin:10px 0"><img src="${p.coverUrl}" /></div>` : "";
-    const opts = (p.options||[]).map(o=>{
-      const my = p.myVote===o.id ? " (已投)" : "";
-      return `<button class="btn" style="width:100%;text-align:left" onclick="doVote('${predId}','${o.id}')">🗳️ ${o.text} · ${o.votes}${my}</button>`;
-    }).join("");
-
-    const comments = (p.comments||[]).slice(0,200).map(c=>{
-      return `
-        <div style="padding:10px 0;border-top:1px solid var(--line)">
-          <div class="row" style="justify-content:space-between">
-            <div><b>@${c.author}</b> <span class="meta">· ${fmtTime(c.createdAt)}</span></div>
-            <button class="btn small" onclick="likeComment('${c.id}')">❤️ ${c.likes}</button>
-          </div>
-          <div style="margin-top:6px;white-space:pre-wrap">${escapeHtml(c.text)}</div>
-        </div>
-      `;
-    }).join("");
-
-    $("detailBody").innerHTML = `
-      <div class="pill">${TAG_LABEL[p.tag]||p.tag} · 結算日 ${p.settleDate}</div>
-      ${cover}
-      <div class="row" style="gap:10px;flex-wrap:wrap;margin:10px 0">
-        <button class="btn" onclick="likePred('${predId}')">❤️ ${p.likes} ${p.likedByMe ? "(已讚)" : ""}</button>
-        <span class="pill">留言 ${p.commentsCount}</span>
-        <span class="pill">總票數 ${p.totalVotes}</span>
-      </div>
-
-      <div class="col" style="gap:8px">
-        ${opts}
-      </div>
-
-      <div class="sep"></div>
-
-      <div class="col">
-        <textarea id="cText" class="input" rows="3" placeholder="留言（300字內）"></textarea>
-        <button class="btn primary" onclick="postComment('${predId}')">送出留言</button>
-      </div>
-
-      <div class="sep"></div>
-      <div><b>留言</b></div>
-      <div>${comments || `<div class="muted" style="padding:8px 0">暫無留言</div>`}</div>
-    `;
-  }
-
-  async function doVote(predId, optionId){
-    if(!state.token) return openAuth();
-    const {data} = await api(`/api/predictions/${predId}/vote`, {method:"POST", body: JSON.stringify({optionId})});
-    if(!data.ok) return alert(data.error || "投票失敗");
-    await openDetail(predId);
-    await refresh();
-  }
-  async function likePred(predId){
-    if(!state.token) return openAuth();
-    const {data} = await api(`/api/predictions/${predId}/like`, {method:"POST", body:"{}"});
-    if(!data.ok) return alert(data.error || "按讚失敗");
-    await openDetail(predId);
-    await refresh();
-  }
-  async function postComment(predId){
-    if(!state.token) return openAuth();
-    const text = $("cText").value.trim();
-    if(!text) return alert("請輸入留言");
-    const {data} = await api(`/api/predictions/${predId}/comments`, {method:"POST", body: JSON.stringify({text})});
-    if(!data.ok) return alert(data.error || "送出失敗");
-    $("cText").value = "";
-    await openDetail(predId);
-    await refresh();
-  }
-  async function likeComment(commentId){
-    if(!state.token) return openAuth();
-    const {data} = await api(`/api/comments/${commentId}/like`, {method:"POST", body:"{}"});
-    if(!data.ok) return alert(data.error || "按讚失敗");
-    // 重新開 detail 會重刷 likes
-    // 取目前 modal title 裡的 pred id 比較麻煩，直接提示使用者刷新即可（或你可自行做 state.detailPredId）
-    alert("已更新，請關閉再重開詳情或刷新頁面");
-    await refresh();
-  }
-
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"']/g, (c)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-
-  // ====== SETTINGS ======
-  function toggleTheme(){
-    // 簡易：黑/更黑（demo）
-    const r = document.documentElement.style;
-    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-    if(bg==="#000"){
-      r.setProperty("--bg", "#f6f6f6");
-      r.setProperty("--panel", "#ffffff");
-      r.setProperty("--panel2", "#f3f4f6");
-      r.setProperty("--text", "#111");
-      r.setProperty("--muted", "#555");
-      r.setProperty("--line", "#e5e7eb");
-      r.setProperty("--chip", "#eef2f7");
-    }else{
-      r.setProperty("--bg", "#000");
-      r.setProperty("--panel", "#0b0b0b");
-      r.setProperty("--panel2", "#111");
-      r.setProperty("--text", "#e7e7e7");
-      r.setProperty("--muted", "#9aa0a6");
-      r.setProperty("--line", "#222");
-      r.setProperty("--chip", "#16181c");
-    }
-  }
-  function fontSize(delta){
-    const cur = parseFloat(getComputedStyle(document.body).fontSize);
-    const next = Math.max(12, Math.min(20, cur + delta));
-    document.body.style.fontSize = next + "px";
-  }
-
-  // ====== INIT ======
-  renderTags();
-  go("feed");
+/* =========================
+   8️⃣ 頁面載入時執行
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
   loadMe();
-  setStatus();
+});
 </script>
+
 </body>
 </html>
