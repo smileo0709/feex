@@ -2,1472 +2,851 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>PredictX - Cloudflare Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FEEx — Future Event Exchange</title>
   <style>
     :root{
-      --safeB: env(safe-area-inset-bottom, 0px);
-      --fontScale: 1;
-      --bg:#000;
-      --card:#070a0f;
-      --panel:#0b0f14;
-      --border: rgba(255,255,255,.08);
-      --text:#e7e9ea;
-      --muted:#8b98a5;
-      --accent:#1d9bf0;
-      --danger:#f91880;
-      --ok:#00ba7c;
+      --bg:#000; --card:#0b0b0b; --card2:#111;
+      --text:#eaeaea; --muted:#a8a8a8;
+      --line:#222; --blue:#1d9bf0; --green:#18c964;
+      --danger:#ff4d4d; --shadow: 0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
-      --shadow: 0 0 0 1px rgba(255,255,255,.06);
-      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
-    [data-theme="light"]{
-      --bg:#f7f7f8;
-      --card:#ffffff;
-      --panel:#ffffff;
-      --border: rgba(0,0,0,.08);
-      --text:#0b0f14;
-      --muted:#536471;
-      --shadow: 0 0 0 1px rgba(0,0,0,.06);
+      --fontSize: 16px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      margin:0; background:var(--bg); color:var(--text);
-      font-family:var(--font); line-height:1.35; overflow-x:hidden;
-      font-size: calc(16px * var(--fontScale));
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
+      background:var(--bg); color:var(--text); font-size:var(--fontSize);
     }
-    a{color:inherit;text-decoration:none}
-    button,input,select,textarea{font-family:inherit}
-    button{touch-action:manipulation}
-    .muted{color:var(--muted)}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
-    .app{
-      max-width:1320px; margin:0 auto;
-      display:grid; grid-template-columns: 280px minmax(420px, 640px) 360px;
-      gap:16px; padding: 12px 12px 24px;
-    }
-    .left{ position:sticky; top:12px; align-self:start; }
-    .brand{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:999px;}
-    .xlogo{
-      width:34px;height:34px;border-radius:10px; display:grid;place-items:center;
-      background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-      box-shadow:var(--shadow); font-weight:900;
-    }
-    [data-theme="light"] .xlogo{ background:linear-gradient(135deg, rgba(0,0,0,.08), rgba(0,0,0,.02)); }
-    .nav{display:flex; flex-direction:column; gap:6px; margin-top:6px;}
-    .nav a{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:999px; transition:.12s ease;}
-    .nav a:hover{background:rgba(255,255,255,.06)}
-    [data-theme="light"] .nav a:hover{background:rgba(0,0,0,.04)}
-    .nav a.active{background:rgba(29,155,240,.16); outline:1px solid rgba(29,155,240,.25);}
-    .ico{ width:22px;height:22px; display:grid; place-items:center; font-size:18px; }
-    .compose{
-      margin-top:12px; padding:12px 14px; border:none; border-radius:999px;
-      background:var(--accent); color:white; font-weight:800; cursor:pointer;
-    }
-    .mini{
-      margin-top:12px; background:var(--panel); border:1px solid var(--border);
-      border-radius:var(--radius); box-shadow:var(--shadow); padding:12px;
-    }
-    .mini .row{display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:.85rem; color:var(--muted);}
-    .pill{
-      display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
-      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-      border-radius:999px; font-size:.78rem; color:var(--muted);
-    }
-    [data-theme="light"] .pill{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
-
-    .center{min-height:80vh}
+    a{color:inherit; text-decoration:none}
+    button, input, textarea, select{font:inherit}
+    .wrap{max-width:1100px; margin:0 auto; padding:0 12px;}
     .topbar{
-      position:sticky; top:12px; z-index:10;
-      background:rgba(0,0,0,.72); backdrop-filter: blur(10px);
-      border:1px solid var(--border); border-radius:var(--radius);
-      box-shadow:var(--shadow); padding:10px;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,.7);
+      border-bottom:1px solid var(--line);
     }
-    [data-theme="light"] .topbar{ background:rgba(255,255,255,.82); }
-    .head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
-    .title{display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; font-size:1rem;}
-    .burger{
-      width:40px;height:40px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:var(--text); cursor:pointer;
-    }
-    [data-theme="light"] .burger{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-
-    .filters{display:flex; gap:8px; flex-wrap:wrap;}
-    .chip{
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03);
-      color:var(--muted); cursor:pointer; font-size:.85rem; white-space:nowrap;
-    }
-    [data-theme="light"] .chip{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-    .chip.active{background:rgba(29,155,240,.16); border-color:rgba(29,155,240,.28); color:var(--text);}
-
-    .feed{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
-    .card{
-      background:var(--card); border:1px solid var(--border);
-      border-radius:var(--radius); box-shadow:var(--shadow); padding:12px;
-    }
-    .meta{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      color:var(--muted); font-size:.78rem; margin-bottom:10px;
-    }
-    .meta .leftmeta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .tag{
-      padding:3px 8px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      color:var(--muted); font-size:.78rem;
-    }
-    [data-theme="light"] .tag{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-    .qtitle{font-weight:900;font-size:1rem;margin:6px 0 10px;letter-spacing:.1px;}
-    .clickTitle{
-      cursor:pointer;
-      text-decoration: underline;
-      text-decoration-color: rgba(29,155,240,.35);
-      text-underline-offset: 4px;
-    }
-
-    .coverSquare{ margin:10px 0 8px; display:flex; justify-content:center; }
-    .coverBox{
-      width: min(420px, 100%);
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      box-shadow:var(--shadow);
-    }
-    [data-theme="light"] .coverBox{ border-color:rgba(0,0,0,.08); background:rgba(0,0,0,.02); }
-    .coverBox img{ width:100%; height:100%; object-fit: cover; display:block; }
-
-    .actions{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      flex-wrap:wrap; margin-top:12px;
-    }
+    .topbar .row{display:flex; align-items:center; justify-content:space-between; gap:10px; height:56px;}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.5px;}
+    .pill{border:1px solid var(--line); border-radius:999px; padding:6px 10px; color:var(--muted); font-size:.9em;}
     .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03);
-      color:var(--text); padding:8px 10px;
-      border-radius:999px; cursor:pointer; font-size:.85rem;
+      border:1px solid var(--line); background:var(--card);
+      color:var(--text); padding:10px 12px; border-radius:999px;
+      cursor:pointer;
     }
-    [data-theme="light"] .btn{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-    .btn.primary{background:rgba(29,155,240,.16);border-color:rgba(29,155,240,.35);}
-    .btn.danger{background:rgba(249,24,128,.14);border-color:rgba(249,24,128,.30);}
-    .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap; color:var(--muted); font-size:.78rem;}
-    .iconBtn{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03);
-      cursor:pointer; font-size:.85rem; color:var(--text);
+    .btn.primary{background:var(--blue); border-color:transparent; color:#fff;}
+    .btn.ghost{background:transparent;}
+    .btn.danger{background:transparent; border-color:rgba(255,77,77,.6); color:#ff9a9a;}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .grid{
+      display:grid; grid-template-columns: 280px 1fr 320px;
+      gap:14px; padding:14px 0;
     }
-    [data-theme="light"] .iconBtn{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-    .iconBtn.active{background: rgba(249,24,128,.14); border-color: rgba(249,24,128,.30);}
-
-    .previewComments{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
-    .pcomment{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:12px; padding:10px;
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
     }
-    [data-theme="light"] .pcomment{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.02); }
-    .pcommentHead{display:flex; justify-content:space-between; gap:10px; align-items:center; color:var(--muted); font-size:.78rem; margin-bottom:6px;}
-    .pcommentBody{ font-size:.92rem; }
-    .moreBtn{
-      margin-top:6px; padding:0; background:transparent; border:none;
-      color:var(--accent); cursor:pointer; font-size:.85rem; text-align:left;
+    .card .hd{padding:12px 12px; border-bottom:1px solid var(--line); font-weight:700;}
+    .card .bd{padding:12px;}
+    .muted{color:var(--muted)}
+    .nav a{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px; border-radius:12px; color:var(--text);
     }
-
-    .opts{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
-    .opt{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03);
-      border-radius:12px;
-      padding:10px; cursor:pointer;
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    .nav a:hover{background:var(--card2)}
+    .tagrow{display:flex; flex-wrap:wrap; gap:8px;}
+    .tag{padding:6px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); cursor:pointer}
+    .tag.active{border-color:rgba(29,155,240,.7); color:#d8efff}
+    .feedHd{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px; border-bottom:1px solid var(--line);
     }
-    [data-theme="light"] .opt{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.02); }
-    .opt:hover{background:rgba(255,255,255,.05)}
-    [data-theme="light"] .opt:hover{background:rgba(0,0,0,.04)}
-    .opt .rightmuted{color:var(--muted);font-size:.78rem;min-width:76px;text-align:right;}
-    .bar{
-      height:8px;border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      overflow:hidden;margin-top:8px;
+    .tabs{display:flex; gap:6px; flex-wrap:wrap}
+    .tab{padding:8px 10px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted); cursor:pointer}
+    .tab.active{background:rgba(29,155,240,.18); border-color:rgba(29,155,240,.55); color:#d8efff}
+    .search{flex:1; min-width:160px; display:flex; gap:8px; align-items:center;}
+    .search input{
+      width:100%; background:#070707; border:1px solid var(--line);
+      color:var(--text); border-radius:999px; padding:10px 12px;
     }
-    [data-theme="light"] .bar{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
-    .bar>div{height:100%;width:0%;background:rgba(29,155,240,.9);}
-
-    .page{display:none}
-    .page.active{display:block}
-    .formGrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-    .field{display:flex;flex-direction:column;gap:6px;}
-    .field label{color:var(--muted);font-size:.78rem;}
-    .field input,.field select,.field textarea{
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 10px;
+    .post{
+      border-bottom:1px solid var(--line);
+      padding:12px;
+      display:flex; gap:12px;
+    }
+    .avatar{
+      width:42px; height:42px; border-radius:999px; background:#151515;
+      border:1px solid var(--line);
+      display:flex; align-items:center; justify-content:center;
+      color:#cfcfcf; font-weight:800;
+      flex:0 0 auto;
+    }
+    .post .meta{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+    .post .title{font-weight:800; margin:6px 0 8px; line-height:1.25}
+    .kpi{display:flex; gap:14px; flex-wrap:wrap; color:var(--muted); font-size:.92em; margin-top:10px}
+    .kpi button{all:unset; cursor:pointer; color:var(--muted)}
+    .kpi button:hover{color:#fff}
+    .cover{
+      width:100%; max-height:320px; aspect-ratio: 1 / 1;
+      background:#0d0d0d; border:1px solid var(--line);
+      border-radius:14px; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      margin-top:10px;
+    }
+    .cover img{width:100%; height:100%; object-fit:cover; display:block}
+    .topComments{
+      margin-top:10px; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+      background:#0a0a0a;
+    }
+    .tcRow{padding:10px 12px; border-top:1px solid var(--line);}
+    .tcRow:first-child{border-top:none}
+    .tcRow .h{display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:.92em}
+    .tcRow .t{margin-top:6px; line-height:1.35}
+    .more{color:#bfe6ff; cursor:pointer; margin-top:6px; display:inline-block}
+    .panelRow{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .field{display:flex; flex-direction:column; gap:6px; margin:10px 0}
+    input, textarea, select{
+      background:#070707; border:1px solid var(--line);
+      color:var(--text); border-radius:12px; padding:10px 12px;
       outline:none;
-      font-size:1rem;
     }
-    [data-theme="light"] .field input,[data-theme="light"] .field select,[data-theme="light"] .field textarea{
-      border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.02);
+    textarea{min-height:92px; resize:vertical}
+    .hr{height:1px; background:var(--line); margin:12px 0}
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:18px; z-index:50;
+      background:#111; border:1px solid var(--line);
+      border-radius:999px; padding:10px 14px; color:#fff;
+      box-shadow: var(--shadow); max-width:90vw;
     }
-    textarea{min-height:88px;resize:vertical}
-    .note{color:var(--muted);font-size:.78rem;margin-top:8px;}
-    .split{height:1px;background:rgba(255,255,255,.08);margin:12px 0;}
-    [data-theme="light"] .split{background:rgba(0,0,0,.08);}
-    .warn{
-      color:#ffcc66; background:rgba(255,204,102,.08);
-      border:1px solid rgba(255,204,102,.18);
-      border-radius:12px; padding:10px; font-size:.9rem;
-    }
-    .ok{
-      color:#9ff0d3; background:rgba(0,186,124,.10);
-      border:1px solid rgba(0,186,124,.20);
-      border-radius:12px; padding:10px; font-size:.9rem;
-    }
-
-    .right{ position:sticky; top:12px; align-self:start; }
-    .search{
-      display:flex;gap:8px;align-items:center;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:999px;
-      padding:10px 12px;
-      box-shadow:var(--shadow);
-    }
-    [data-theme="light"] .search{ background:rgba(0,0,0,.03); border-color:rgba(0,0,0,.10); }
-    .search input{flex:1;background:transparent;border:none;color:var(--text);outline:none;font-size:.95rem;}
-    .panel{
-      margin-top:12px; background:var(--panel);
-      border:1px solid var(--border); border-radius:var(--radius);
-      box-shadow:var(--shadow); overflow:hidden;
-    }
-    .panel h3{ margin:0; padding:12px 12px 10px; font-size:1rem; font-weight:900; border-bottom:1px solid rgba(255,255,255,.06); }
-    [data-theme="light"] .panel h3{ border-bottom-color: rgba(0,0,0,.06); }
-    .trend{ padding:12px; border-bottom:1px solid rgba(255,255,255,.06); cursor:pointer; }
-    [data-theme="light"] .trend{ border-bottom-color: rgba(0,0,0,.06); }
-    .trend:hover{background:rgba(255,255,255,.04)}
-    [data-theme="light"] .trend:hover{background:rgba(0,0,0,.03)}
-    .trend .t1{color:var(--muted);font-size:.78rem}
-    .trend .t2{font-weight:900;margin-top:4px;font-size:.95rem}
-    .trend .t3{color:var(--muted);font-size:.78rem;margin-top:6px}
-
-    /* Drawer */
-    .drawerBack{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:50;}
-    .drawerBack.show{display:block}
-    .drawer{
-      position:fixed;top:0;left:0;height:100%;width:320px;
-      background:var(--card);border-right:1px solid var(--border);
-      box-shadow:0 20px 80px rgba(0,0,0,.35);
-      transform:translateX(-100%);transition:transform .18s ease;
-      z-index:51;padding:12px;
-    }
-    .drawer.open{transform:translateX(0)}
-    .dhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 6px 10px;}
-    .dtitle{font-weight:900}
-    .closeBtn{
-      width:36px;height:36px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      color:var(--text);cursor:pointer;
-    }
-    [data-theme="light"] .closeBtn{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.03); }
-    .tagList{display:flex;flex-direction:column;gap:8px;padding:6px}
-    .tagItem{
-      padding:10px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03);
-      cursor:pointer;display:flex;justify-content:space-between;align-items:center;
-    }
-    [data-theme="light"] .tagItem{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.02); }
-    .tagItem span{color:var(--muted);font-size:.78rem}
-
-    @media (max-width: 980px){
-      .app{grid-template-columns: 88px 1fr 320px;}
-      .label-hide{display:none;}
-    }
-    @media (max-width: 900px){
-      .app{grid-template-columns:1fr;gap:12px;padding:10px 10px calc(86px + var(--safeB));}
-      .right{display:none !important;}
-      .center{order:1;}
-      .left{
-        position:fixed !important; left:0; right:0; bottom:0; top:auto !important;
-        z-index:60; padding: 8px 10px calc(10px + var(--safeB));
-        background: rgba(0,0,0,.88); backdrop-filter: blur(12px);
-        border-top: 1px solid rgba(255,255,255,.10);
-      }
-      [data-theme="light"] .left{ background: rgba(255,255,255,.86); border-top-color: rgba(0,0,0,.10); }
-      .brand,.compose,.mini{display:none !important;}
-      .nav{flex-direction:row !important;justify-content:space-around;gap:8px;margin-top:0 !important;}
-      .nav a{flex:1;justify-content:center;padding:12px 10px;border-radius:16px;}
-      .ico{font-size:20px;width:24px;height:24px}
-      .topbar{position:relative !important; top:auto !important; border-radius:14px;}
-      .mobileSearch{display:flex !important;}
-      .filters{flex-wrap:nowrap;overflow:auto;-webkit-overflow-scrolling: touch;scrollbar-width:none;}
-      .filters::-webkit-scrollbar{display:none;}
-      .chip{flex:0 0 auto;}
-      .drawer{width:84vw;max-width:360px;}
-    }
-
-    .fab{
-      position:fixed; right:16px;
-      bottom: calc(86px + var(--safeB) + 10px);
-      width:54px;height:54px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(29,155,240,.95);
-      color:#fff;font-size:28px;font-weight:900;
-      cursor:pointer; box-shadow: 0 16px 50px rgba(0,0,0,.35); z-index:70;
-    }
-    @media (min-width: 901px){ .fab{display:none;} }
-
-    .modalBack{position:fixed; inset:0;background:rgba(0,0,0,.55);display:none;z-index:90;}
-    .modalBack.show{display:block;}
     .modal{
-      position:fixed;left:50%;top:50%;
-      transform:translate(-50%,-50%);
-      width:min(720px, 92vw); max-height:82vh; overflow:auto;
-      background:var(--card); border:1px solid var(--border);
-      border-radius:18px; box-shadow:0 30px 120px rgba(0,0,0,.45);
-      padding:12px; z-index:91; display:none;
+      position:fixed; inset:0; background:rgba(0,0,0,.7);
+      display:none; align-items:center; justify-content:center; z-index:60;
+      padding:16px;
     }
-    .modal.show{display:block;}
-    .modalHead{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;}
-    .modalTitle{font-weight:900}
-    .modal textarea{
-      width:100%; min-height:220px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      border-radius:12px; padding:10px; outline:none; font-size:.9rem;
+    .modal.show{display:flex}
+    .modal .box{
+      width:min(720px, 96vw);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px; overflow:hidden;
     }
-    [data-theme="light"] .modal textarea{ border-color:rgba(0,0,0,.10); background:rgba(0,0,0,.02); }
+    .modal .box .hd{display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--line); font-weight:800}
+    .modal .box .bd{padding:12px}
+    .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .hide{display:none !important}
+
+    /* Mobile */
+    @media (max-width: 980px){
+      .grid{grid-template-columns: 1fr; }
+      .right, .left{display:none;}
+      .topbar .pill{display:none;}
+    }
+    @media (max-width: 420px){
+      .btn{padding:10px 10px}
+      .avatar{width:38px;height:38px}
+    }
   </style>
 </head>
-
 <body>
-  <div class="drawerBack" id="drawerBack"></div>
-  <aside class="drawer" id="drawer" aria-hidden="true">
-    <div class="dhead">
-      <div class="dtitle">分類 TAG</div>
-      <button class="closeBtn" id="closeDrawer" aria-label="關閉">✕</button>
-    </div>
-    <div class="tagList" id="tagList"></div>
-    <div class="note">點分類後會回到「預測」頁並套用篩選。</div>
-  </aside>
-
-  <div class="modalBack" id="modalBack"></div>
-  <div class="modal" id="modal">
-    <div class="modalHead">
-      <div class="modalTitle" id="modalTitle">登入</div>
-      <button class="closeBtn" id="closeModal" aria-label="關閉">✕</button>
-    </div>
-    <div class="formGrid">
-      <div class="field" style="grid-column:1/-1">
-        <label>Email</label>
-        <input id="authEmail" placeholder="you@example.com" />
-      </div>
-      <div class="field" style="grid-column:1/-1">
-        <label>Password（>=6）</label>
-        <input id="authPass" type="password" placeholder="******" />
+  <div class="topbar">
+    <div class="wrap">
+      <div class="row">
+        <div class="brand">
+          <span class="avatar" style="width:34px;height:34px;">F</span>
+          <span>FEEx</span>
+          <span class="pill" id="envPill">prod</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn ghost" id="themeBtn" title="開燈/關燈">🌙</button>
+          <button class="btn" id="openProfileBtn">個人</button>
+          <button class="btn primary" id="openAuthBtn">登入/註冊</button>
+        </div>
       </div>
     </div>
-    <div class="actions" style="margin-top:10px">
-      <div class="inline"><span class="pill">Cloudflare D1 帳號</span></div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn" id="btnRegister">註冊</button>
-        <button class="btn primary" id="btnLogin">登入</button>
-      </div>
-    </div>
-    <div class="note" id="authNote">登入後才可看廣告、投票、留言、建立事件。</div>
   </div>
 
-  <div class="app">
-    <aside class="left">
-      <div class="brand">
-        <div class="xlogo">PX</div>
-        <div class="label-hide">
-          <div style="font-weight:900;letter-spacing:.2px">PredictX</div>
-          <div class="muted" style="font-size:.78rem">Cloudflare + D1</div>
-        </div>
-      </div>
-
-      <nav class="nav" id="nav">
-        <a href="#" data-page="predict" class="active"><span class="ico">🏠</span><span class="label-hide">未來事件預測</span></a>
-        <a href="#" data-page="publish"><span class="ico">➕</span><span class="label-hide">未來事件發布</span></a>
-        <a href="#" data-page="profile"><span class="ico">👤</span><span class="label-hide">個人檔案</span></a>
-        <a href="#" data-page="rules"><span class="ico">📜</span><span class="label-hide">規則&設定</span></a>
-      </nav>
-
-      <button class="compose" id="watchAdTop">看廣告拿金幣（+100 GC）</button>
-
-      <div class="mini" id="miniProfile">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div style="font-weight:900">你的狀態</div>
-          <span class="pill" id="miniTier">Tier ?</span>
-        </div>
-        <div class="row"><span>登入</span><span id="miniAuth">未登入</span></div>
-        <div class="row"><span>暱稱</span><span id="miniNick">-</span></div>
-        <div class="row"><span>GC</span><span id="miniGC">-</span></div>
-        <div class="row"><span>勝率</span><span id="miniWR">-</span></div>
-        <div class="row"><span>等級</span><span id="miniLvl">-</span></div>
-      </div>
-    </aside>
-
-    <main class="center">
-      <div class="topbar">
-        <div class="head">
-          <div class="title">
-            <button class="burger" id="openDrawer" aria-label="開啟分類">☰</button>
-            <span id="pageTitle">未來事件預測</span>
-            <span class="pill" id="activeTagPill">TAG：全部</span>
+  <div class="wrap">
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="left card">
+        <div class="hd">分類 TAG</div>
+        <div class="bd">
+          <div class="tagrow" id="tagRow"></div>
+          <div class="hr"></div>
+          <div class="nav">
+            <a href="#" data-page="feed">🏠 <span class="muted">首頁</span></a>
+            <a href="#" data-page="create">🧩 <span class="muted">發布預測</span></a>
+            <a href="#" data-page="rules">📜 <span class="muted">規則&設定</span></a>
           </div>
-          <div class="inline">
-            <span class="pill" id="authPill">未登入</span>
-            <button class="btn" id="btnOpenAuth">登入/註冊</button>
+        </div>
+      </div>
+
+      <!-- CENTER -->
+      <div class="card">
+        <div class="feedHd">
+          <div class="tabs" id="hotTabs"></div>
+          <div class="search">
+            <input id="qInput" placeholder="搜尋題目..." />
+            <button class="btn" id="refreshBtn">刷新</button>
           </div>
         </div>
 
-        <div class="search mobileSearch" id="mobileSearch" style="display:none; margin-bottom:10px;">
-          <span style="color:var(--muted)">🔎</span>
-          <input id="searchInputMobile" placeholder="搜尋題目/關鍵字…" />
+        <div id="pageFeed">
+          <div id="feedList"></div>
         </div>
 
-        <div class="filters" id="hotFilters">
-          <button class="chip active" data-hot="day">當日熱門</button>
-          <button class="chip" data-hot="week">本週熱門</button>
-          <button class="chip" data-hot="month">本月熱門</button>
-          <button class="chip" data-hot="all">總熱門</button>
-        </div>
-      </div>
-
-      <section class="page active" id="page-predict">
-        <div class="feed" id="feed"></div>
-      </section>
-
-      <section class="page" id="page-detail">
-        <div class="card" id="detailCard"></div>
-      </section>
-
-      <section class="page" id="page-publish">
-        <div class="card">
-          <div class="meta">
-            <div class="leftmeta">
-              <span class="tag">發布預測</span>
-              <span class="tag">費用：1000 GC</span>
-              <span class="tag">選項：2～12</span>
-              <span class="tag">封面：正方形置中</span>
+        <div id="pageCreate" class="hide">
+          <div class="hd">發布一個預測</div>
+          <div class="bd">
+            <div class="muted" style="margin-bottom:10px">
+              需要會員等級 ≥ 4，建立費 1000 GC（示範）。封面可貼正方形圖片網址（縮網址也可）。
             </div>
-            <div class="muted">後端可信扣款</div>
-          </div>
 
-          <div class="formGrid">
-            <div class="field" style="grid-column:1/-1">
+            <div class="field">
               <label>題目</label>
-              <input id="pubTitle" placeholder="例：2026 世足冠軍會是誰？" maxlength="120" />
+              <input id="cTitle" placeholder="例如：2026 世足冠軍會是誰？" />
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label>分類 TAG</label>
+                <select id="cTag"></select>
+              </div>
+              <div class="field">
+                <label>結算日期</label>
+                <input id="cSettle" placeholder="YYYY-MM-DD" />
+              </div>
             </div>
 
             <div class="field">
-              <label>分類 TAG</label>
-              <select id="pubTag"></select>
+              <label>封面圖（URL）</label>
+              <input id="cCover" placeholder="https://..." />
             </div>
 
             <div class="field">
-              <label>結算日期</label>
-              <input id="pubSettle" type="date" />
+              <label>選項（2~12 行，一行一個）</label>
+              <textarea id="cOptions" placeholder="巴西&#10;法國&#10;阿根廷"></textarea>
             </div>
 
-            <div class="field" style="grid-column:1/-1">
-              <label>封面圖片網址（可貼縮網址，但最好是直接圖片連結）</label>
-              <input id="pubCover" placeholder="https://...jpg/png/webp" />
+            <div class="panelRow">
+              <button class="btn" id="adBtn">看廣告拿 100 GC</button>
+              <button class="btn primary" id="createBtn">送出預測</button>
             </div>
 
-            <div class="field" style="grid-column:1/-1">
-              <label>選項（每行一個）</label>
-              <textarea id="pubOptions" placeholder="例如：&#10;阿根廷&#10;法國&#10;巴西"></textarea>
-            </div>
-          </div>
-
-          <div class="actions">
-            <div class="inline">
-              <span class="pill">提示：先看廣告湊 GC</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn primary" id="createPrediction">建立預測（扣 1000 GC）</button>
-            </div>
-          </div>
-          <div class="note" id="pubNote"></div>
-        </div>
-      </section>
-
-      <section class="page" id="page-profile">
-        <div class="card">
-          <div class="meta">
-            <div class="leftmeta">
-              <span class="tag">個人檔案</span>
-              <span class="tag">後端儲存</span>
-            </div>
-            <div class="muted">字體大小在「規則&設定」調整（本機）</div>
-          </div>
-
-          <div class="formGrid">
-            <div class="field">
-              <label>暱稱</label>
-              <input id="pNick" maxlength="20" />
-            </div>
-            <div class="field">
-              <label>會員等級（Tier）</label>
-              <select id="pTier">
-                <option value="1">1 新手</option>
-                <option value="2">2 可評論</option>
-                <option value="3">3 可評鑑</option>
-                <option value="4">4 可建立事件</option>
-                <option value="5">5 可刪留言</option>
-                <option value="6">6 自治裁決</option>
-                <option value="7">7 Manager</option>
-                <option value="8">8 可分潤（高風險）</option>
-                <option value="9">9 BM</option>
-                <option value="10">10 Director 候選</option>
-              </select>
-            </div>
-
-            <div class="field" style="grid-column:1/-1">
-              <label>個人簽名</label>
-              <textarea id="pBio" maxlength="140"></textarea>
-            </div>
-
-            <div class="field">
-              <label>等級（Level）</label>
-              <input id="pLevel" type="number" min="1" step="1" />
-            </div>
-
-            <div class="field">
-              <label>預測勝率（%）</label>
-              <input id="pWR" type="number" min="0" max="100" step="1" />
-            </div>
-          </div>
-
-          <div class="actions">
-            <div class="inline">
-              <span class="pill">GC 由後端控制（看廣告/扣費）</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn" id="watchAd">看廣告（+100 GC）</button>
-              <button class="btn primary" id="saveProfile">儲存</button>
-              <button class="btn danger" id="logout">登出</button>
-            </div>
-          </div>
-          <div class="note" id="profileNote"></div>
-        </div>
-      </section>
-
-      <section class="page" id="page-rules">
-        <div class="card">
-          <div class="meta">
-            <div class="leftmeta">
-              <span class="tag">規則</span>
-              <span class="tag">設定</span>
-            </div>
-            <div class="muted">給使用者看的說明</div>
-          </div>
-
-          <div class="ok">
-            <b>平台用途</b><br/>
-            本平台提供「未來事件預測」互動與社群討論，屬於娛樂與資訊交流用途。GC 為平台內部使用點數，用於平台功能與互動。
-          </div>
-
-          <div class="split"></div>
-
-          <div class="warn">
-            <b>使用風險與重要提醒（給使用者）</b><br/>
-            1) 平台內容由使用者發布，資料來源可能不完整或有誤，請自行判斷。<br/>
-            2) 預測結果不保證正確，不構成任何建議或保證。<br/>
-            3) GC 為平台內部點數，不可兌換現金或代幣。<br/>
-            4) 熱門/按讚可能被操控，不代表客觀事實。<br/>
-            5) 外部連結與廣告跳轉請注意資安與個資風險。
-          </div>
-
-          <div class="split"></div>
-
-          <div class="ok"><b>設定（本機）</b><br/>以下設定存於 localStorage。</div>
-
-          <div class="split"></div>
-
-          <div class="formGrid">
-            <div class="field">
-              <label>字體大小（全站）</label>
-              <select id="sFontSize">
-                <option value="0.92">小</option>
-                <option value="1.00">中（預設）</option>
-                <option value="1.08">大</option>
-                <option value="1.18">特大</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>主題</label>
-              <select id="sTheme">
-                <option value="dark">關燈（深色）</option>
-                <option value="light">開燈（淺色）</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="actions">
-            <div class="inline"><span class="pill">工具按鈕</span></div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn" id="btnToggleTheme">🌗 開燈/關燈</button>
-              <button class="btn danger" id="btnClearLocal">🧹 清除本機設定</button>
-            </div>
+            <div class="muted" id="createHint" style="margin-top:10px"></div>
           </div>
         </div>
-      </section>
-    </main>
 
-    <aside class="right">
-      <div class="search">
-        <span style="color:var(--muted)">🔎</span>
-        <input id="searchInput" placeholder="搜尋題目/關鍵字…" />
-      </div>
+        <div id="pageRules" class="hide">
+          <div class="hd">規則 & 設定</div>
+          <div class="bd">
+            <div class="panelRow">
+              <div>
+                <div style="font-weight:800; margin-bottom:4px;">顯示設定</div>
+                <div class="muted">調整字體大小、主題模式（示範）。</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn" id="fontMinus">A-</button>
+                <button class="btn" id="fontPlus">A+</button>
+              </div>
+            </div>
 
-      <div class="panel">
-        <h3>熱門（依目前排序）</h3>
-        <div id="trends"></div>
-      </div>
+            <div class="hr"></div>
 
-      <div class="panel">
-        <h3>提示</h3>
-        <div class="trend" style="cursor:default">
-          <div class="t2">先登入</div>
-          <div class="t3">登入後才可看廣告、投票、留言、建立預測。</div>
+            <div style="font-weight:800; margin-bottom:6px;">給使用者的使用風險（摘要）</div>
+            <ul class="muted" style="line-height:1.6; margin-top:6px;">
+              <li>本平台為娛樂/社群預測用途；GC 為平台內點數，不可兌現、不可保證價值。</li>
+              <li>任何預測結果可能受到資訊不完整、操作行為或事件變更影響，請自行判斷。</li>
+              <li>平台可基於防作弊與治理需要調整規則、參數與內容展示。</li>
+              <li>使用者需對自己的發言、留言與互動內容負責。</li>
+            </ul>
+
+            <div class="hr"></div>
+
+            <div style="font-weight:800; margin-bottom:6px;">治理與分配（示範）</div>
+            <div class="muted" style="line-height:1.6;">
+              事件結算後：發布者 10%，銷毀 5%，其餘 85% 依投入比例返還（示範規則）。
+            </div>
+          </div>
         </div>
       </div>
-    </aside>
+
+      <!-- RIGHT -->
+      <div class="right card">
+        <div class="hd">帳號概況</div>
+        <div class="bd">
+          <div id="meBox" class="muted">尚未登入</div>
+          <div class="hr"></div>
+          <button class="btn" id="logoutBtn">登出</button>
+          <div class="hr"></div>
+
+          <div style="font-weight:800; margin-bottom:8px;">Google 登入（待接後端）</div>
+          <button class="btn" id="googleBtn">使用 Google 登入</button>
+          <div class="muted" style="margin-top:8px; line-height:1.5;">
+            目前後端尚未提供 /api/login-google（或 code 交換）端點，這裡先顯示按鈕與提示。
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <button class="fab" id="fabPublish" title="發布預測" aria-label="發布預測">＋</button>
+  <!-- AUTH MODAL -->
+  <div class="modal" id="authModal">
+    <div class="box">
+      <div class="hd">
+        <span>登入 / 註冊（Email）</span>
+        <button class="btn ghost" id="closeAuth">✕</button>
+      </div>
+      <div class="bd">
+        <div class="split">
+          <div class="card" style="box-shadow:none;">
+            <div class="hd">註冊</div>
+            <div class="bd">
+              <div class="field">
+                <label>Email</label>
+                <input id="rEmail" placeholder="name@example.com" />
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input id="rPass" type="password" placeholder="至少 6 碼" />
+              </div>
+              <button class="btn primary" id="registerBtn" style="width:100%;">註冊</button>
+            </div>
+          </div>
+
+          <div class="card" style="box-shadow:none;">
+            <div class="hd">登入</div>
+            <div class="bd">
+              <div class="field">
+                <label>Email</label>
+                <input id="lEmail" placeholder="name@example.com" />
+              </div>
+              <div class="field">
+                <label>Password</label>
+                <input id="lPass" type="password" placeholder="你的密碼" />
+              </div>
+              <button class="btn primary" id="loginBtn" style="width:100%;">登入</button>
+              <div class="muted" style="margin-top:10px;">
+                Google 登入稍後再接（需要後端交換 token）。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:10px;" id="authHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal" id="profileModal">
+    <div class="box">
+      <div class="hd">
+        <span>個人檔案</span>
+        <button class="btn ghost" id="closeProfile">✕</button>
+      </div>
+      <div class="bd">
+        <div id="profileInfo" class="muted">尚未登入</div>
+
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>暱稱（20 字內）</label>
+          <input id="pNick" placeholder="你的暱稱" />
+        </div>
+        <div class="field">
+          <label>個人簽名（140 字內）</label>
+          <textarea id="pBio" placeholder="一句話介紹自己"></textarea>
+        </div>
+
+        <div class="panelRow">
+          <div class="panelRow" style="gap:8px;">
+            <button class="btn" id="fontMinus2">A-</button>
+            <button class="btn" id="fontPlus2">A+</button>
+          </div>
+          <button class="btn primary" id="saveProfileBtn">儲存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal" id="detailModal">
+    <div class="box">
+      <div class="hd">
+        <span id="dTitle">貼文</span>
+        <button class="btn ghost" id="closeDetail">✕</button>
+      </div>
+      <div class="bd" id="detailBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hide"></div>
 
 <script>
-/** =========================
- *  CONFIG
- * ========================= */
-// ✅ 本機測試：Worker 端 wrangler dev 通常是這個
-// 上線後換成你的 worker 網址，例如 https://predictx-api.yourname.workers.dev
-const API_BASE = "http://127.0.0.1:8787";
+  // ====== CONFIG ======
+  const API_BASE = "https://api.feex.win"; // ← 你可以改
+  const TAGS = ["all","sports","world","politics","tech","finance","entertainment"];
+  const HOTS = ["day","week","month","all"];
 
-const TAGS = [
-  {key:"all", name:"全部"},
-  {key:"sports", name:"運動"},
-  {key:"current", name:"時勢"},
-  {key:"politics", name:"政治"},
-  {key:"tech", name:"科技"},
-  {key:"ent", name:"娛樂"},
-  {key:"finance", name:"財經"},
-];
-
-const LS = {
-  ui: "px_cf_ui_v1",
-  theme: "px_cf_theme_v1",
-  font: "px_cf_font_v1",
-  token: "px_cf_token_v1",
-};
-
-let token = localStorage.getItem(LS.token) || "";
-
-/** =========================
- *  UI STATE
- * ========================= */
-function loadJSON(key, fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch{return fallback;} }
-function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
-
-let ui = loadJSON(LS.ui, { page:"predict", hot:"day", tag:"all", q:"", detailId:null, previewExpand:{} });
-
-/** =========================
- *  Helpers
- * ========================= */
-function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
-function truncateText(s, n){
-  const t = String(s ?? "");
-  if(t.length <= n) return {text: t, truncated:false};
-  return {text: t.slice(0, n) + "…", truncated:true};
-}
-function fmtDate(ms){
-  try { return new Date(ms).toLocaleString("zh-Hant", {month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"}); }
-  catch { return ""; }
-}
-function hotLabel(h){ return ({day:"當日熱門", week:"本週熱門", month:"本月熱門", all:"總熱門"})[h] || "熱門"; }
-
-async function api(path, opts={}){
-  const headers = Object.assign({ "Content-Type":"application/json" }, opts.headers || {});
-  if(token) headers["Authorization"] = "Bearer " + token;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  const data = await res.json().catch(()=>({ ok:false, error:"Bad JSON" }));
-  if(!res.ok && data?.error) throw new Error(data.error);
-  return data;
-}
-
-/** =========================
- *  DOM
- * ========================= */
-const els = {
-  nav: document.getElementById("nav"),
-  pageTitle: document.getElementById("pageTitle"),
-  activeTagPill: document.getElementById("activeTagPill"),
-  feed: document.getElementById("feed"),
-  trends: document.getElementById("trends"),
-  detailCard: document.getElementById("detailCard"),
-  hotFilters: document.getElementById("hotFilters"),
-
-  drawerBack: document.getElementById("drawerBack"),
-  drawer: document.getElementById("drawer"),
-  openDrawer: document.getElementById("openDrawer"),
-  closeDrawer: document.getElementById("closeDrawer"),
-  tagList: document.getElementById("tagList"),
-
-  searchInput: document.getElementById("searchInput"),
-  searchInputMobile: document.getElementById("searchInputMobile"),
-
-  fabPublish: document.getElementById("fabPublish"),
-
-  // mini
-  miniAuth: document.getElementById("miniAuth"),
-  miniNick: document.getElementById("miniNick"),
-  miniGC: document.getElementById("miniGC"),
-  miniWR: document.getElementById("miniWR"),
-  miniLvl: document.getElementById("miniLvl"),
-  miniTier: document.getElementById("miniTier"),
-
-  // auth
-  authPill: document.getElementById("authPill"),
-  btnOpenAuth: document.getElementById("btnOpenAuth"),
-  modalBack: document.getElementById("modalBack"),
-  modal: document.getElementById("modal"),
-  closeModal: document.getElementById("closeModal"),
-  authEmail: document.getElementById("authEmail"),
-  authPass: document.getElementById("authPass"),
-  btnRegister: document.getElementById("btnRegister"),
-  btnLogin: document.getElementById("btnLogin"),
-  authNote: document.getElementById("authNote"),
-
-  // publish
-  pubTitle: document.getElementById("pubTitle"),
-  pubTag: document.getElementById("pubTag"),
-  pubSettle: document.getElementById("pubSettle"),
-  pubCover: document.getElementById("pubCover"),
-  pubOptions: document.getElementById("pubOptions"),
-  createPrediction: document.getElementById("createPrediction"),
-  pubNote: document.getElementById("pubNote"),
-
-  // profile
-  pNick: document.getElementById("pNick"),
-  pTier: document.getElementById("pTier"),
-  pBio: document.getElementById("pBio"),
-  pLevel: document.getElementById("pLevel"),
-  pWR: document.getElementById("pWR"),
-  saveProfile: document.getElementById("saveProfile"),
-  watchAd: document.getElementById("watchAd"),
-  watchAdTop: document.getElementById("watchAdTop"),
-  logout: document.getElementById("logout"),
-  profileNote: document.getElementById("profileNote"),
-
-  // settings
-  sFontSize: document.getElementById("sFontSize"),
-  sTheme: document.getElementById("sTheme"),
-  btnToggleTheme: document.getElementById("btnToggleTheme"),
-  btnClearLocal: document.getElementById("btnClearLocal"),
-};
-
-let me = null;
-let cacheFeed = [];
-let cacheDetail = null;
-
-/** =========================
- *  Drawer
- * ========================= */
-function openDrawer(){
-  els.drawerBack.classList.add("show");
-  els.drawer.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-function closeDrawer(){
-  els.drawerBack.classList.remove("show");
-  els.drawer.classList.remove("open");
-  document.body.style.overflow = "";
-}
-els.openDrawer.addEventListener("click", openDrawer);
-els.closeDrawer.addEventListener("click", closeDrawer);
-els.drawerBack.addEventListener("click", closeDrawer);
-
-function renderTagList(){
-  els.tagList.innerHTML = "";
-  const add = (key, name, hint) => {
-    const div = document.createElement("div");
-    div.className = "tagItem";
-    div.innerHTML = `<div>${esc(name)}</div><span>${esc(hint)}</span>`;
-    div.addEventListener("click", ()=>{
-      ui.tag = key;
-      ui.page = "predict";
-      ui.detailId = null;
-      saveJSON(LS.ui, ui);
-      closeDrawer();
-      setPage("predict");
-    });
-    els.tagList.appendChild(div);
+  // ====== STATE ======
+  let state = {
+    tag: "all",
+    hot: "day",
+    q: "",
+    token: localStorage.getItem("feex_token") || "",
+    me: null,
+    theme: localStorage.getItem("feex_theme") || "dark",
+    fontSize: parseInt(localStorage.getItem("feex_font") || "16", 10),
   };
-  add("all","全部","清除篩選");
-  TAGS.filter(t=>t.key!=="all").forEach(t=>add(t.key, t.name, "點選套用"));
-}
 
-/** =========================
- *  Auth modal
- * ========================= */
-function openModal(){
-  els.modalBack.classList.add("show");
-  els.modal.classList.add("show");
-  document.body.style.overflow = "hidden";
-}
-function closeModal(){
-  els.modalBack.classList.remove("show");
-  els.modal.classList.remove("show");
-  document.body.style.overflow = "";
-}
-els.btnOpenAuth.addEventListener("click", openModal);
-els.closeModal.addEventListener("click", closeModal);
-els.modalBack.addEventListener("click", closeModal);
-
-els.btnRegister.addEventListener("click", async ()=>{
-  try{
-    const email = els.authEmail.value.trim();
-    const password = els.authPass.value;
-    const r = await api("/api/register", { method:"POST", body: JSON.stringify({ email, password }) });
-    if(r.ok) els.authNote.textContent = "註冊成功，請按登入。";
-  }catch(e){ els.authNote.textContent = "註冊失敗：" + e.message; }
-});
-els.btnLogin.addEventListener("click", async ()=>{
-  try{
-    const email = els.authEmail.value.trim();
-    const password = els.authPass.value;
-    const r = await api("/api/login", { method:"POST", body: JSON.stringify({ email, password }) });
-    token = r.token;
-    localStorage.setItem(LS.token, token);
-    await loadMe();
-    closeModal();
-    renderAll();
-  }catch(e){ els.authNote.textContent = "登入失敗：" + e.message; }
-});
-els.logout.addEventListener("click", ()=>{
-  token = "";
-  localStorage.removeItem(LS.token);
-  me = null;
-  cacheDetail = null;
-  renderAll();
-});
-
-async function loadMe(){
-  if(!token){ me=null; return; }
-  const r = await api("/api/me");
-  me = r.user;
-}
-
-/** =========================
- *  Routing
- * ========================= */
-function setPage(page){
-  ui.page = page;
-  saveJSON(LS.ui, ui);
-
-  document.querySelectorAll(".nav a").forEach(a=>{
-    a.classList.toggle("active", a.dataset.page === page);
-  });
-
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  const sec = document.getElementById("page-" + page);
-  if(sec) sec.classList.add("active");
-
-  const titleMap = {
-    predict:"未來事件預測",
-    detail:"題目詳情",
-    publish:"未來事件發布",
-    profile:"個人檔案",
-    rules:"規則&設定",
+  // ====== UI Helpers ======
+  const $ = (id) => document.getElementById(id);
+  const toast = (msg) => {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.remove("hide");
+    clearTimeout(toast._tm);
+    toast._tm = setTimeout(()=>t.classList.add("hide"), 2400);
   };
-  els.pageTitle.textContent = titleMap[page] || "PredictX";
-  els.hotFilters.style.display = (page === "predict") ? "flex" : "none";
-  els.fabPublish.style.display = (page === "publish") ? "none" : "";
 
-  renderAll();
-}
-
-els.nav.addEventListener("click", (e)=>{
-  const a = e.target.closest("a[data-page]");
-  if(!a) return;
-  e.preventDefault();
-  ui.detailId = null;
-  setPage(a.dataset.page);
-});
-els.fabPublish.addEventListener("click", ()=> { ui.detailId=null; setPage("publish"); });
-
-/** =========================
- *  Filters + Search
- * ========================= */
-els.hotFilters.addEventListener("click", (e)=>{
-  const b = e.target.closest(".chip[data-hot]");
-  if(!b) return;
-  ui.hot = b.dataset.hot;
-  saveJSON(LS.ui, ui);
-  loadFeed().then(renderAll);
-});
-function bindSearchInput(inputEl){
-  if(!inputEl) return;
-  inputEl.value = ui.q || "";
-  inputEl.addEventListener("input", ()=>{
-    ui.q = (inputEl.value || "").trim();
-    if(inputEl === els.searchInput && els.searchInputMobile) els.searchInputMobile.value = ui.q;
-    if(inputEl === els.searchInputMobile && els.searchInput) els.searchInput.value = ui.q;
-    saveJSON(LS.ui, ui);
-    loadFeed().then(renderAll);
-  });
-}
-bindSearchInput(els.searchInput);
-bindSearchInput(els.searchInputMobile);
-
-/** =========================
- *  Settings (local)
- * ========================= */
-function applyTheme(theme){ document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark"); }
-function applyFont(scale){
-  const v = Number(scale);
-  const safe = Number.isFinite(v) ? Math.max(0.85, Math.min(1.25, v)) : 1;
-  document.documentElement.style.setProperty("--fontScale", String(safe));
-}
-function syncLocalSettingsUI(){
-  const theme = localStorage.getItem(LS.theme) || "dark";
-  const font = localStorage.getItem(LS.font) || "1.00";
-  els.sTheme.value = theme;
-  els.sFontSize.value = font;
-  applyTheme(theme);
-  applyFont(font);
-}
-els.sTheme.addEventListener("change", ()=>{
-  localStorage.setItem(LS.theme, els.sTheme.value);
-  syncLocalSettingsUI();
-});
-els.sFontSize.addEventListener("change", ()=>{
-  localStorage.setItem(LS.font, els.sFontSize.value);
-  syncLocalSettingsUI();
-});
-els.btnToggleTheme.addEventListener("click", ()=>{
-  const cur = localStorage.getItem(LS.theme) || "dark";
-  localStorage.setItem(LS.theme, cur === "light" ? "dark" : "light");
-  syncLocalSettingsUI();
-});
-els.btnClearLocal.addEventListener("click", ()=>{
-  localStorage.removeItem(LS.theme);
-  localStorage.removeItem(LS.font);
-  syncLocalSettingsUI();
-});
-
-/** =========================
- *  Feed / Detail loading
- * ========================= */
-async function loadFeed(){
-  const qs = new URLSearchParams({ tag: ui.tag, hot: ui.hot, q: ui.q || "" });
-  const r = await api("/api/predictions?" + qs.toString(), { method:"GET" });
-  cacheFeed = r.predictions || [];
-}
-async function loadDetail(predId){
-  const r = await api("/api/predictions/" + encodeURIComponent(predId), { method:"GET" });
-  cacheDetail = r.prediction;
-}
-function openDetail(predId){
-  ui.detailId = predId;
-  ui.page = "detail";
-  saveJSON(LS.ui, ui);
-  setPage("detail");
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-
-/** =========================
- *  Actions
- * ========================= */
-async function watchAd(){
-  if(!token) return openModal();
-  try{
-    const r = await api("/api/claim-ad", { method:"POST" });
-    await loadMe();
-    alert("已獲得 100 GC");
-    renderAll();
-  }catch(e){
-    // cooldown conflict returns message in worker, show friendly
-    alert("暫時不能看廣告：" + e.message);
-  }
-}
-els.watchAd.addEventListener("click", watchAd);
-els.watchAdTop.addEventListener("click", watchAd);
-
-function renderPubTag(){
-  els.pubTag.innerHTML = TAGS.filter(t=>t.key!=="all").map(t=>`<option value="${t.key}">${esc(t.name)}</option>`).join("");
-}
-els.createPrediction.addEventListener("click", async ()=>{
-  if(!token) return openModal();
-  try{
-    const title = (els.pubTitle.value || "").trim();
-    const tag = els.pubTag.value;
-    const settleDate = els.pubSettle.value;
-    const coverUrl = (els.pubCover.value || "").trim();
-    const options = (els.pubOptions.value || "").split("\n").map(s=>s.trim()).filter(Boolean);
-
-    const r = await api("/api/predictions", {
-      method:"POST",
-      body: JSON.stringify({ title, tag, settleDate, coverUrl, options })
-    });
-
-    els.pubNote.textContent = "已建立（扣 1000 GC）。";
-    els.pubTitle.value = ""; els.pubSettle.value = ""; els.pubCover.value = ""; els.pubOptions.value = "";
-    await loadMe();
-    await loadFeed();
-    ui.page = "predict"; ui.tag = tag;
-    setPage("predict");
-  }catch(e){
-    els.pubNote.textContent = "建立失敗：" + e.message;
-  }
-});
-
-els.saveProfile.addEventListener("click", async ()=>{
-  if(!token) return openModal();
-  try{
-    const body = {
-      nick: els.pNick.value,
-      bio: els.pBio.value,
-      tier: Number(els.pTier.value),
-      level: Number(els.pLevel.value),
-      winRate: Number(els.pWR.value),
-    };
-    const r = await api("/api/me", { method:"PATCH", body: JSON.stringify(body) });
-    me = r.user;
-    els.profileNote.textContent = "已儲存";
-    renderAll();
-  }catch(e){
-    els.profileNote.textContent = "儲存失敗：" + e.message;
-  }
-});
-
-/** =========================
- *  Render
- * ========================= */
-function renderMini(){
-  if(!me){
-    els.miniAuth.textContent = "未登入";
-    els.miniNick.textContent = "-";
-    els.miniGC.textContent = "-";
-    els.miniWR.textContent = "-";
-    els.miniLvl.textContent = "-";
-    els.miniTier.textContent = "Tier ?";
-    els.authPill.textContent = "未登入";
-  }else{
-    els.miniAuth.textContent = me.email;
-    els.miniNick.textContent = me.nick;
-    els.miniGC.textContent = String(me.gc);
-    els.miniWR.textContent = me.winRate + "%";
-    els.miniLvl.textContent = String(me.level);
-    els.miniTier.textContent = "Tier " + me.tier;
-    els.authPill.textContent = me.nick + " · GC " + me.gc;
-  }
-}
-function renderActiveTag(){
-  const tagName = TAGS.find(t=>t.key===ui.tag)?.name || "全部";
-  els.activeTagPill.textContent = "TAG：" + tagName;
-}
-function renderHotFilterState(){
-  document.querySelectorAll(".chip[data-hot]").forEach(c=>{
-    c.classList.toggle("active", c.dataset.hot === ui.hot);
-  });
-}
-
-function renderFeed(){
-  els.feed.innerHTML = "";
-  if(cacheFeed.length === 0){
-    const empty = document.createElement("div");
-    empty.className = "card";
-    empty.innerHTML = `<div class="warn"><b>沒有符合條件的預測。</b><br/>試試看清除 TAG 或搜尋字。</div>`;
-    els.feed.appendChild(empty);
-    return;
-  }
-
-  cacheFeed.forEach(pred=>{
-    const tagName = TAGS.find(t=>t.key===pred.tag)?.name || pred.tag;
-    const createdTxt = new Date(pred.createdAt).toLocaleDateString("zh-Hant", {year:"numeric", month:"2-digit", day:"2-digit"});
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="meta">
-        <div class="leftmeta">
-          <span class="tag">${esc(tagName)}</span>
-          <span class="tag">結算：${esc(pred.settleDate || "-")}</span>
-          <span class="tag">建立：${createdTxt}</span>
-        </div>
-        <div class="muted">${hotLabel(ui.hot)}</div>
-      </div>
-
-      <div class="qtitle clickTitle" data-open="1">${esc(pred.title)}</div>
-
-      ${pred.coverUrl ? `
-        <div class="coverSquare" data-open="1">
-          <div class="coverBox">
-            <img src="${esc(pred.coverUrl)}" alt="cover" loading="lazy"
-                 onerror="this.style.display='none'; this.closest('.coverSquare').style.display='none';" />
-          </div>
-        </div>
-      ` : ""}
-
-      <div class="muted" style="font-size:.78rem">
-        總投票/池（demo）：<b style="color:var(--text)">${pred.totalVotes || 0}</b>
-      </div>
-
-      <div class="previewComments" id="pc-${pred.id}"></div>
-
-      <div class="actions">
-        <div class="inline">
-          <span class="pill">❤️ ${pred.likes || 0}</span>
-          <span class="pill">💬 ${pred.commentsCount || 0}</span>
-          <span class="pill">排序：${hotLabel(ui.hot)}</span>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn primary" data-act="detail">查看詳情</button>
-        </div>
-      </div>
-    `;
-
-    card.querySelectorAll('[data-open="1"]').forEach(el=>{
-      el.addEventListener("click", ()=> openDetail(pred.id));
-    });
-    card.querySelector('[data-act="detail"]').addEventListener("click", ()=> openDetail(pred.id));
-
-    const pc = card.querySelector(`#pc-${pred.id}`);
-    const top2 = pred.topComments || [];
-    if(top2.length === 0){
-      const d = document.createElement("div");
-      d.className = "muted"; d.style.fontSize = ".85rem";
-      d.textContent = "目前還沒有留言。";
-      pc.appendChild(d);
+  function applyTheme(){
+    document.documentElement.style.setProperty("--fontSize", state.fontSize+"px");
+    if(state.theme === "light"){
+      document.documentElement.style.setProperty("--bg","#f7f7f7");
+      document.documentElement.style.setProperty("--card","#fff");
+      document.documentElement.style.setProperty("--card2","#f1f1f1");
+      document.documentElement.style.setProperty("--text","#0a0a0a");
+      document.documentElement.style.setProperty("--muted","#5d5d5d");
+      document.documentElement.style.setProperty("--line","#e2e2e2");
+      $("themeBtn").textContent = "☀️";
     }else{
-      top2.forEach(c=>{
-        const expanded = !!ui.previewExpand?.[c.id];
-        const {text, truncated} = expanded ? {text: String(c.text||""), truncated:false} : truncateText(c.text, 60);
-
-        const div = document.createElement("div");
-        div.className = "pcomment";
-        div.innerHTML = `
-          <div class="pcommentHead">
-            <div>${esc(c.author)} · ${esc(fmtDate(c.createdAt))}</div>
-            <div>❤️ ${c.likes}</div>
-          </div>
-          <div class="pcommentBody">${esc(text)}</div>
-          ${(!expanded && truncated) ? `<button class="moreBtn" data-more="1">顯示更多</button>` : (expanded ? `<button class="moreBtn" data-less="1">收起</button>` : "")}
-        `;
-        const more = div.querySelector("[data-more]");
-        const less = div.querySelector("[data-less]");
-        if(more){
-          more.addEventListener("click", ()=>{
-            ui.previewExpand ??= {};
-            ui.previewExpand[c.id] = true;
-            saveJSON(LS.ui, ui);
-            renderAll();
-          });
-        }
-        if(less){
-          less.addEventListener("click", ()=>{
-            ui.previewExpand ??= {};
-            delete ui.previewExpand[c.id];
-            saveJSON(LS.ui, ui);
-            renderAll();
-          });
-        }
-        pc.appendChild(div);
-      });
+      document.documentElement.style.setProperty("--bg","#000");
+      document.documentElement.style.setProperty("--card","#0b0b0b");
+      document.documentElement.style.setProperty("--card2","#111");
+      document.documentElement.style.setProperty("--text","#eaeaea");
+      document.documentElement.style.setProperty("--muted","#a8a8a8");
+      document.documentElement.style.setProperty("--line","#222");
+      $("themeBtn").textContent = "🌙";
     }
-
-    els.feed.appendChild(card);
-  });
-}
-
-function renderTrends(){
-  els.trends.innerHTML = "";
-  const list = cacheFeed.slice(0,6);
-  if(list.length === 0){
-    const div = document.createElement("div");
-    div.className = "trend"; div.style.cursor="default";
-    div.innerHTML = `<div class="t2">沒有熱門項目</div><div class="t3">清除 TAG/搜尋後再試</div>`;
-    els.trends.appendChild(div);
-    return;
   }
-  list.forEach((p,i)=>{
-    const tagName = TAGS.find(t=>t.key===p.tag)?.name || p.tag;
-    const div = document.createElement("div");
-    div.className = "trend";
-    div.innerHTML = `
-      <div class="t1">${i+1} · ${esc(tagName)} · ${hotLabel(ui.hot)}</div>
-      <div class="t2">${esc(p.title)}</div>
-      <div class="t3">總池：${p.totalVotes || 0} · ❤️ ${p.likes || 0}</div>
-    `;
-    div.addEventListener("click", ()=> openDetail(p.id));
-    els.trends.appendChild(div);
-  });
-}
 
-function renderDetail(){
-  const pred = cacheDetail;
-  if(!pred){
-    els.detailCard.innerHTML = `<div class="warn"><b>尚未載入詳情。</b></div>`;
-    return;
+  function setPage(p){
+    $("pageFeed").classList.toggle("hide", p!=="feed");
+    $("pageCreate").classList.toggle("hide", p!=="create");
+    $("pageRules").classList.toggle("hide", p!=="rules");
   }
-  const tagName = TAGS.find(t=>t.key===pred.tag)?.name || pred.tag;
-  const totalVotes = pred.totalVotes || 0;
 
-  els.detailCard.innerHTML = `
-    <div class="actions" style="margin-top:0">
-      <div class="inline">
-        <button class="btn" id="detailBack">← 返回</button>
-        <span class="pill">${esc(tagName)}</span>
-        <span class="pill">總池：${totalVotes}</span>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="iconBtn ${pred.likedByMe ? "active":""}" id="detailLike">❤️ ${pred.likes}</button>
-      </div>
-    </div>
+  function initials(nick){
+    const s = (nick||"U").trim();
+    return s.slice(0,1).toUpperCase();
+  }
 
-    <div class="split"></div>
+  function fmtDate(ms){
+    try{
+      const d = new Date(Number(ms));
+      if(!Number.isFinite(d.getTime())) return "";
+      return d.toISOString().slice(0,10);
+    }catch{ return ""; }
+  }
 
-    <div class="meta">
-      <div class="leftmeta">
-        <span class="tag">結算：${esc(pred.settleDate || "-")}</span>
-      </div>
-      <div class="muted">ID：<span class="mono">${esc(String(pred.id).slice(0,8))}</span></div>
-    </div>
+  // ====== API ======
+  async function api(path, opts={}){
+    const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+    if(state.token) headers["Authorization"] = "Bearer "+state.token;
+    const res = await fetch(API_BASE + path, {...opts, headers});
+    const data = await res.json().catch(()=>({ok:false,error:"Bad JSON"}));
+    if(!res.ok && !data?.error) data.error = "HTTP "+res.status;
+    return data;
+  }
 
-    <div class="qtitle">${esc(pred.title)}</div>
-
-    ${pred.coverUrl ? `
-      <div class="coverSquare">
-        <div class="coverBox">
-          <img src="${esc(pred.coverUrl)}" alt="cover" loading="lazy"
-               onerror="this.style.display='none'; this.closest('.coverSquare').style.display='none';" />
-        </div>
-      </div>
-    ` : ""}
-
-    <div class="opts" id="detailOpts"></div>
-
-    <div class="split"></div>
-
-    <div class="muted" style="font-size:.78rem">留言（熱門 / 最新 / 全部）</div>
-    <div class="filters" style="margin-top:10px">
-      <button class="chip active" data-ctab="hot">熱門留言</button>
-      <button class="chip" data-ctab="new">最新留言</button>
-      <button class="chip" data-ctab="all">全部</button>
-    </div>
-
-    <div class="split"></div>
-
-    <div id="detailCommentList"></div>
-
-    <div class="split"></div>
-
-    <div class="field">
-      <label>新增留言</label>
-      <textarea id="detailCommentInput" placeholder="輸入留言…（需登入）" maxlength="300"></textarea>
-    </div>
-    <div class="actions">
-      <div class="inline"><span class="pill">${me ? "作者：" + esc(me.nick) : "未登入"}</span></div>
-      <button class="btn primary" id="detailSendComment">送出</button>
-    </div>
-  `;
-
-  document.getElementById("detailBack").addEventListener("click", ()=>{
-    ui.detailId = null; ui.page="predict";
-    saveJSON(LS.ui, ui);
-    setPage("predict");
-  });
-
-  document.getElementById("detailLike").addEventListener("click", async ()=>{
-    if(!token) return openModal();
-    await api(`/api/predictions/${encodeURIComponent(pred.id)}/like`, { method:"POST" });
-    await loadDetail(pred.id);
-    await loadFeed();
-    renderAll();
-  });
-
-  // options
-  const optsWrap = document.getElementById("detailOpts");
-  pred.options.forEach(opt=>{
-    const pct = totalVotes > 0 ? Math.round((opt.votes/totalVotes)*100) : 0;
-    const el = document.createElement("div");
-    el.className = "opt";
-    el.innerHTML = `
-      <div style="flex:1;">
-        <div style="font-weight:800">${esc(opt.text)}</div>
-        <div class="bar"><div style="width:${pct}%"></div></div>
-      </div>
-      <div class="rightmuted">${opt.votes}（${pct}%）</div>
-    `;
-    el.addEventListener("click", async ()=>{
-      if(!token) return openModal();
-      await api(`/api/predictions/${encodeURIComponent(pred.id)}/vote`, {
-        method:"POST",
-        body: JSON.stringify({ optionId: opt.id })
-      });
-      await loadDetail(pred.id);
-      await loadFeed();
-      renderAll();
-    });
-    optsWrap.appendChild(el);
-  });
-
-  // comment tabs (client-side sorting)
-  let tab = "hot";
-  const chips = els.detailCard.querySelectorAll("[data-ctab]");
-  chips.forEach(c=>{
-    c.addEventListener("click", ()=>{
-      chips.forEach(x=>x.classList.remove("active"));
-      c.classList.add("active");
-      tab = c.dataset.ctab;
-      renderCommentList();
-    });
-  });
-
-  function renderCommentList(){
-    const wrap = document.getElementById("detailCommentList");
-    wrap.innerHTML = "";
-    const list = (pred.comments || []).slice();
-    if(tab === "hot") list.sort((a,b)=> (b.likes||0)-(a.likes||0) || (b.createdAt||0)-(a.createdAt||0));
-    if(tab === "new") list.sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
-    if(tab === "all") list.sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
-
-    if(list.length === 0){
-      const d = document.createElement("div");
-      d.className = "muted"; d.textContent = "目前還沒有留言。";
-      wrap.appendChild(d);
+  async function loadMe(){
+    if(!state.token){ state.me=null; renderMe(); return; }
+    const data = await api("/api/me", {method:"GET"});
+    if(!data.ok){
+      state.me = null;
+      renderMe();
       return;
     }
+    state.me = data.user;
+    renderMe();
+  }
 
-    list.forEach(c=>{
-      const div = document.createElement("div");
-      div.className = "card";
-      div.style.padding = "10px";
-      div.innerHTML = `
-        <div class="meta" style="margin-bottom:6px">
-          <div class="leftmeta">
-            <span class="tag">${esc(c.author)}</span>
-            <span class="tag">${esc(fmtDate(c.createdAt))}</span>
-          </div>
-          <div class="muted">❤️ ${c.likes}</div>
+  function renderMe(){
+    if(!state.me){
+      $("meBox").innerHTML = "尚未登入";
+      $("openAuthBtn").textContent = "登入/註冊";
+      return;
+    }
+    $("openAuthBtn").textContent = "已登入";
+    $("meBox").innerHTML = `
+      <div style="font-weight:800; font-size:1.05em;">${escapeHtml(state.me.nick)}</div>
+      <div class="muted">${escapeHtml(state.me.email)}</div>
+      <div class="hr"></div>
+      <div class="muted">Tier：${state.me.tier}　Lv：${state.me.level}</div>
+      <div class="muted">勝率：${state.me.winRate}%　GC：${state.me.gc}</div>
+    `;
+    $("profileInfo").innerHTML = `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="avatar">${initials(state.me.nick)}</div>
+        <div>
+          <div style="font-weight:800;">${escapeHtml(state.me.nick)}</div>
+          <div class="muted">${escapeHtml(state.me.bio||"")}</div>
         </div>
-        <div style="font-size:.95rem">${esc(c.text)}</div>
-        <div class="actions" style="margin-top:10px">
-          <div class="inline"></div>
-          <button class="iconBtn" data-like="1">❤️ 按讚</button>
-        </div>
-      `;
-      div.querySelector("[data-like]").addEventListener("click", async ()=>{
-        if(!token) return openModal();
-        await api(`/api/comments/${encodeURIComponent(c.id)}/like`, { method:"POST" });
-        await loadDetail(pred.id);
-        await loadFeed();
-        renderAll();
+      </div>
+    `;
+    $("pNick").value = state.me.nick || "";
+    $("pBio").value = state.me.bio || "";
+  }
+
+  async function loadFeed(){
+    $("feedList").innerHTML = `<div class="bd muted">載入中...</div>`;
+    const q = state.q ? `&q=${encodeURIComponent(state.q)}` : "";
+    const data = await api(`/api/predictions?tag=${encodeURIComponent(state.tag)}&hot=${encodeURIComponent(state.hot)}${q}`, {method:"GET"});
+    if(!data.ok){
+      $("feedList").innerHTML = `<div class="bd" style="color:#ff9a9a;">載入失敗：${escapeHtml(data.error||"")}</div>`;
+      return;
+    }
+    const list = data.predictions || [];
+    if(!list.length){
+      $("feedList").innerHTML = `<div class="bd muted">目前沒有內容</div>`;
+      return;
+    }
+    $("feedList").innerHTML = list.map(renderPost).join("");
+    // bind events
+    list.forEach(p=>{
+      const likeBtn = document.querySelector(`[data-like="${p.id}"]`);
+      if(likeBtn) likeBtn.addEventListener("click", ()=>toggleLike(p.id));
+      const openBtn = document.querySelector(`[data-open="${p.id}"]`);
+      if(openBtn) openBtn.addEventListener("click", ()=>openDetail(p.id));
+    });
+  }
+
+  function renderPost(p){
+    const top = Array.isArray(p.topComments) ? p.topComments : [];
+    const topHtml = top.length ? `
+      <div class="topComments">
+        ${top.map(tc=>{
+          const raw = tc.text || "";
+          const short = raw.length > 70 ? raw.slice(0,70) + "…" : raw;
+          const needMore = raw.length > 70;
+          return `
+          <div class="tcRow">
+            <div class="h">
+              <span>@${escapeHtml(tc.author||"User")}</span>
+              <span>♥ ${Number(tc.likes||0)}</span>
+            </div>
+            <div class="t" data-tc="${tc.id}" data-full="${escapeAttr(raw)}">${escapeHtml(short)}</div>
+            ${needMore ? `<span class="more" data-more="${tc.id}">顯示更多</span>` : ``}
+          </div>`;
+        }).join("")}
+      </div>
+    ` : ``;
+
+    // bind "show more" after insertion (delegation)
+    setTimeout(()=>{
+      document.querySelectorAll("[data-more]").forEach(el=>{
+        el.onclick = () => {
+          const id = el.getAttribute("data-more");
+          const t = document.querySelector(`[data-tc="${id}"]`);
+          if(!t) return;
+          t.textContent = t.getAttribute("data-full") || t.textContent;
+          el.remove();
+        };
       });
-      wrap.appendChild(div);
-    });
-  }
-  renderCommentList();
+    }, 0);
 
-  document.getElementById("detailSendComment").addEventListener("click", async ()=>{
-    if(!token) return openModal();
-    const ta = document.getElementById("detailCommentInput");
-    const text = (ta.value || "").trim();
-    if(!text) return alert("留言不能為空");
-    await api(`/api/predictions/${encodeURIComponent(pred.id)}/comments`, {
-      method:"POST",
-      body: JSON.stringify({ text })
-    });
-    ta.value = "";
-    await loadDetail(pred.id);
+    return `
+      <div class="post">
+        <div class="avatar">${initials(p.ownerNick || "U")}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="meta">
+            <span style="font-weight:800;">@${escapeHtml(p.ownerNick || "User")}</span>
+            <span class="muted">·</span>
+            <span class="muted">${escapeHtml(p.tag||"")}</span>
+            <span class="muted">·</span>
+            <span class="muted">結算 ${escapeHtml(p.settleDate||"")}</span>
+          </div>
+          <div class="title">${escapeHtml(p.title||"")}</div>
+
+          ${p.coverUrl ? `
+            <div class="cover">
+              <img src="${escapeAttr(p.coverUrl)}" alt="cover" loading="lazy" />
+            </div>
+          ` : ""}
+
+          <div class="kpi">
+            <button data-open="${p.id}">💬 ${Number(p.commentsCount||0)}</button>
+            <button data-like="${p.id}">♥ ${Number(p.likes||0)}</button>
+            <span>🗳 ${Number(p.totalVotes||0)}</span>
+          </div>
+
+          ${topHtml}
+
+          <div style="margin-top:10px;">
+            <button class="btn" data-open="${p.id}">查看完整內容</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function toggleLike(predId){
+    if(!state.token) return toast("請先登入");
+    const data = await api(`/api/predictions/${predId}/like`, {method:"POST"});
+    if(!data.ok) return toast(data.error||"失敗");
     await loadFeed();
-    renderAll();
-  });
-}
+  }
 
-function fillProfile(){
-  if(!me){
-    els.pNick.value = "";
-    els.pBio.value = "";
-    els.pTier.value = "1";
-    els.pLevel.value = "1";
-    els.pWR.value = "50";
-    els.profileNote.textContent = "請先登入";
-    return;
-  }
-  els.pNick.value = me.nick || "";
-  els.pBio.value = me.bio || "";
-  els.pTier.value = String(me.tier || 1);
-  els.pLevel.value = String(me.level || 1);
-  els.pWR.value = String(me.winRate ?? 50);
-  els.profileNote.textContent = "";
-}
+  async function openDetail(predId){
+    const d = $("detailModal");
+    d.classList.add("show");
+    $("detailBody").innerHTML = `<div class="muted">載入中...</div>`;
+    const data = await api(`/api/predictions/${predId}`, {method:"GET"});
+    if(!data.ok){
+      $("detailBody").innerHTML = `<div style="color:#ff9a9a;">載入失敗：${escapeHtml(data.error||"")}</div>`;
+      return;
+    }
+    const p = data.prediction;
+    $("dTitle").textContent = p.title || "貼文";
 
-function renderAll(){
-  renderMini();
-  renderActiveTag();
-  renderHotFilterState();
-  syncLocalSettingsUI();
+    const opts = (p.options||[]).map(o=>`
+      <div class="panelRow" style="border:1px solid var(--line); padding:10px 12px; border-radius:14px; margin:8px 0;">
+        <div style="min-width:0;">
+          <div style="font-weight:700;">${escapeHtml(o.text)}</div>
+          <div class="muted">票數：${Number(o.votes||0)}</div>
+        </div>
+        <button class="btn" data-vote="${o.id}">投票</button>
+      </div>
+    `).join("");
 
-  // page specific
-  if(ui.page === "predict"){
-    renderFeed();
-    renderTrends();
-  }
-  if(ui.page === "detail"){
-    renderDetail();
-  }
-  if(ui.page === "publish"){
-    renderPubTag();
-    els.pubNote.textContent = token ? "" : "請先登入";
-  }
-  if(ui.page === "profile"){
-    fillProfile();
-  }
-}
+    const cm = (p.comments||[]).map(c=>`
+      <div style="border-top:1px solid var(--line); padding:10px 0;">
+        <div class="panelRow">
+          <div class="muted">@${escapeHtml(c.author||"User")} · ${escapeHtml(fmtDate(c.createdAt)||"")}</div>
+          <button class="btn" data-likec="${c.id}">♥ ${Number(c.likes||0)}</button>
+        </div>
+        <div style="margin-top:6px; line-height:1.5;">${escapeHtml(c.text||"")}</div>
+      </div>
+    `).join("") || `<div class="muted">還沒有留言</div>`;
 
-/** =========================
- *  Init
- * ========================= */
-renderTagList();
-(async ()=>{
-  syncLocalSettingsUI();
-  try{
+    $("detailBody").innerHTML = `
+      <div class="muted">${escapeHtml(p.tag||"")} · 結算 ${escapeHtml(p.settleDate||"")}</div>
+      ${p.coverUrl ? `<div class="cover" style="margin-top:10px;"><img src="${escapeAttr(p.coverUrl)}" /></div>` : ""}
+
+      <div class="hr"></div>
+      <div style="font-weight:800;">投票</div>
+      <div class="muted">你只能投一次（示範）。</div>
+      ${opts}
+
+      <div class="hr"></div>
+      <div style="font-weight:800; margin-bottom:6px;">留言</div>
+      <div class="field">
+        <textarea id="cmtText" placeholder="寫下你的看法（300字內）"></textarea>
+      </div>
+      <div class="panelRow">
+        <button class="btn" id="postCmtBtn">送出留言</button>
+        <button class="btn" id="refreshDetailBtn">刷新</button>
+      </div>
+
+      <div class="hr"></div>
+      <div style="font-weight:800;">熱門/最新留言</div>
+      ${cm}
+    `;
+
+    document.querySelectorAll("[data-vote]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        if(!state.token) return toast("請先登入");
+        const optionId = btn.getAttribute("data-vote");
+        const r = await api(`/api/predictions/${predId}/vote`, {method:"POST", body: JSON.stringify({optionId})});
+        if(!r.ok) return toast(r.error||"投票失敗");
+        toast("投票成功");
+        await openDetail(predId);
+        await loadFeed();
+      };
+    });
+
+    document.querySelectorAll("[data-likec]").forEach(btn=>{
+      btn.onclick = async ()=>{
+        if(!state.token) return toast("請先登入");
+        const cid = btn.getAttribute("data-likec");
+        const r = await api(`/api/comments/${cid}/like`, {method:"POST"});
+        if(!r.ok) return toast(r.error||"失敗");
+        await openDetail(predId);
+        await loadFeed();
+      };
+    });
+
+    $("postCmtBtn").onclick = async ()=>{
+      if(!state.token) return toast("請先登入");
+      const text = ($("cmtText").value||"").trim();
+      const r = await api(`/api/predictions/${predId}/comments`, {method:"POST", body: JSON.stringify({text})});
+      if(!r.ok) return toast(r.error||"留言失敗");
+      toast("已留言");
+      await openDetail(predId);
+      await loadFeed();
+    };
+
+    $("refreshDetailBtn").onclick = async ()=>{
+      await openDetail(predId);
+    };
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function escapeAttr(s){ return escapeHtml(s).replaceAll("\n"," "); }
+
+  // ====== INIT UI ======
+  function initTags(){
+    const row = $("tagRow");
+    row.innerHTML = TAGS.map(t=>`<span class="tag ${t===state.tag?"active":""}" data-tag="${t}">${t}</span>`).join("");
+    row.querySelectorAll("[data-tag]").forEach(el=>{
+      el.onclick = ()=>{ state.tag = el.getAttribute("data-tag"); initTags(); loadFeed(); };
+    });
+
+    const sel = $("cTag");
+    sel.innerHTML = TAGS.filter(t=>t!=="all").map(t=>`<option value="${t}">${t}</option>`).join("");
+  }
+
+  function initHotTabs(){
+    const row = $("hotTabs");
+    row.innerHTML = HOTS.map(h=>`<button class="tab ${h===state.hot?"active":""}" data-hot="${h}">${h==="day"?"當日熱門":h==="week"?"本週熱門":h==="month"?"本月熱門":"總熱門"}</button>`).join("");
+    row.querySelectorAll("[data-hot]").forEach(el=>{
+      el.onclick = ()=>{ state.hot = el.getAttribute("data-hot"); initHotTabs(); loadFeed(); };
+    });
+  }
+
+  function initNav(){
+    document.querySelectorAll(".nav a[data-page]").forEach(a=>{
+      a.onclick = (e)=>{
+        e.preventDefault();
+        setPage(a.getAttribute("data-page"));
+      };
+    });
+  }
+
+  // ====== ACTIONS ======
+  $("refreshBtn").onclick = ()=>loadFeed();
+  $("qInput").onkeydown = (e)=>{
+    if(e.key==="Enter"){
+      state.q = $("qInput").value.trim();
+      loadFeed();
+    }
+  };
+
+  $("openAuthBtn").onclick = ()=>$("authModal").classList.add("show");
+  $("closeAuth").onclick = ()=>$("authModal").classList.remove("show");
+  $("openProfileBtn").onclick = ()=>$("profileModal").classList.add("show");
+  $("closeProfile").onclick = ()=>$("profileModal").classList.remove("show");
+  $("closeDetail").onclick = ()=>$("detailModal").classList.remove("show");
+
+  $("logoutBtn").onclick = ()=>{
+    state.token = "";
+    localStorage.removeItem("feex_token");
+    state.me = null;
+    renderMe();
+    toast("已登出");
+  };
+
+  $("themeBtn").onclick = ()=>{
+    state.theme = (state.theme==="dark") ? "light" : "dark";
+    localStorage.setItem("feex_theme", state.theme);
+    applyTheme();
+  };
+
+  function bumpFont(delta){
+    state.fontSize = Math.max(12, Math.min(22, state.fontSize + delta));
+    localStorage.setItem("feex_font", String(state.fontSize));
+    applyTheme();
+  }
+  $("fontMinus").onclick = ()=>bumpFont(-1);
+  $("fontPlus").onclick = ()=>bumpFont(+1);
+  $("fontMinus2").onclick = ()=>bumpFont(-1);
+  $("fontPlus2").onclick = ()=>bumpFont(+1);
+
+  $("googleBtn").onclick = ()=>{
+    toast("Google 登入：需要後端新增 /api/login-google 才能完成");
+  };
+
+  $("registerBtn").onclick = async ()=>{
+    const email = $("rEmail").value.trim();
+    const password = $("rPass").value;
+    const r = await api("/api/register", {method:"POST", body: JSON.stringify({email, password})});
+    $("authHint").textContent = r.ok ? "註冊成功，請直接登入。" : ("註冊失敗："+(r.error||""));
+    if(r.ok) toast("註冊成功");
+  };
+
+  $("loginBtn").onclick = async ()=>{
+    const email = $("lEmail").value.trim();
+    const password = $("lPass").value;
+    const r = await api("/api/login", {method:"POST", body: JSON.stringify({email, password})});
+    if(!r.ok){ $("authHint").textContent = "登入失敗："+(r.error||""); return; }
+    state.token = r.token;
+    localStorage.setItem("feex_token", state.token);
+    $("authModal").classList.remove("show");
+    toast("登入成功");
     await loadMe();
-  }catch{
-    token=""; localStorage.removeItem(LS.token);
-  }
-  await loadFeed();
-  setPage(ui.page || "predict");
+    await loadFeed();
+  };
 
-  if(ui.page === "detail" && ui.detailId){
-    await loadDetail(ui.detailId);
-    renderAll();
-  }
-})();
+  $("saveProfileBtn").onclick = async ()=>{
+    if(!state.token) return toast("請先登入");
+    const nick = $("pNick").value.trim();
+    const bio = $("pBio").value.trim();
+    const r = await api("/api/me", {method:"PATCH", body: JSON.stringify({nick, bio})});
+    if(!r.ok) return toast(r.error||"儲存失敗");
+    state.me = r.user;
+    toast("已更新");
+    renderMe();
+    await loadFeed();
+  };
 
-window.addEventListener("keydown", (e)=>{
-  if(e.key === "Escape"){ closeDrawer(); closeModal(); }
-});
+  $("adBtn").onclick = async ()=>{
+    if(!state.token) return toast("請先登入");
+    const r = await api("/api/claim-ad", {method:"POST"});
+    if(!r.ok){
+      if(r.error==="Cooldown") return toast("冷卻中，稍後再試");
+      return toast(r.error||"失敗");
+    }
+    toast(`獲得 ${r.reward} GC，新餘額 ${r.newBalance}`);
+    await loadMe();
+  };
+
+  $("createBtn").onclick = async ()=>{
+    if(!state.token) return toast("請先登入");
+    const title = $("cTitle").value.trim();
+    const tag = $("cTag").value;
+    const settleDate = $("cSettle").value.trim();
+    const coverUrl = $("cCover").value.trim();
+    const options = $("cOptions").value.split("\n").map(s=>s.trim()).filter(Boolean);
+    const r = await api("/api/predictions", {method:"POST", body: JSON.stringify({title, tag, settleDate, coverUrl, options})});
+    if(!r.ok){ $("createHint").textContent = "失敗："+(r.error||""); return toast(r.error||"失敗"); }
+    $("createHint").textContent = "已建立！";
+    toast("已建立預測");
+    setPage("feed");
+    await loadMe();
+    await loadFeed();
+  };
+
+  // ====== BOOT ======
+  (async function boot(){
+    $("envPill").textContent = API_BASE.includes("127.0.0.1") ? "dev" : "prod";
+    applyTheme();
+    initTags();
+    initHotTabs();
+    initNav();
+    setPage("feed");
+    await loadMe();
+    await loadFeed();
+  })();
 </script>
 </body>
 </html>
