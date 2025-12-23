@@ -4,1397 +4,724 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>FEEx — Future Event Exchange</title>
-  <meta name="theme-color" content="#000000" />
   <style>
     :root{
-      --bg:#000;
-      --panel:#0b0b0b;
-      --panel2:#111;
-      --border:#242424;
-      --text:#e7e7e7;
-      --muted:#9aa0a6;
-      --brand:#1d9bf0; /* X 藍 */
-      --good:#2dd4bf;
-      --bad:#fb7185;
-      --shadow: 0 10px 30px rgba(0,0,0,.55);
-      --radius:16px;
-      --fontScale: 1;
-      --maxw: 1240px;
-      --colLeft: 270px;
-      --colRight: 340px;
+      --bg:#000; --panel:#0b0b0b; --panel2:#111; --text:#e7e7e7; --muted:#9aa0a6;
+      --line:#222; --blue:#1d9bf0; --red:#ff4d4f; --green:#21c55d; --chip:#16181c;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --w: 1100px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
-      font-size: calc(15px * var(--fontScale));
-      line-height:1.45;
-    }
-    a{color:inherit; text-decoration:none}
-    button,input,select,textarea{font:inherit; color:inherit}
-    .app{
-      max-width:var(--maxw);
-      margin:0 auto;
-      display:grid;
-      grid-template-columns: var(--colLeft) minmax(0,1fr) var(--colRight);
-      gap:18px;
-      padding: 14px 14px 40px;
-    }
-    /* Top bar (mobile) */
-    .topbar{
-      position:sticky; top:0; z-index:40;
-      backdrop-filter: blur(10px);
-      background: rgba(0,0,0,.75);
-      border-bottom:1px solid var(--border);
-      padding: 10px 12px;
-      display:none;
-      align-items:center;
-      gap:10px;
-    }
-    .iconBtn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      padding:8px 10px;
-      border-radius:999px;
-      cursor:pointer;
-    }
-    .brand{
-      display:flex; align-items:center; gap:10px; min-width:0;
-      font-weight:800;
-    }
-    .brand .dot{
-      width:10px; height:10px; border-radius:50%;
-      background:var(--brand);
-      box-shadow: 0 0 0 6px rgba(29,155,240,.15);
-    }
-    .brand .name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .pill{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.03);
-      padding:7px 10px;
-      border-radius:999px;
-      color:var(--muted);
-      cursor:pointer;
-      white-space:nowrap;
-    }
-    .pill.active{border-color:rgba(29,155,240,.45); color:var(--text); background:rgba(29,155,240,.10)}
-    .card{
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border-radius:var(--radius);
-      overflow:hidden;
-      box-shadow: var(--shadow);
-    }
-    .panel{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.03);
-      border-radius:var(--radius);
-      overflow:hidden;
-    }
-    .left, .right{position:sticky; top:14px; height:calc(100dvh - 28px); overflow:auto}
-    .left::-webkit-scrollbar,.right::-webkit-scrollbar{width:8px}
-    .left::-webkit-scrollbar-thumb,.right::-webkit-scrollbar-thumb{background:#1f1f1f;border-radius:999px}
-
-    .nav{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .nav .navItem{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      border:1px solid transparent;
-      background:transparent;
-    }
-    .nav .navItem:hover{background:rgba(255,255,255,.04)}
-    .nav .navItem.active{border-color:rgba(29,155,240,.45); background:rgba(29,155,240,.10)}
-    .nav .sub{color:var(--muted); font-size:.9em}
-
-    .sectionTitle{
-      padding:12px 14px;
-      border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
-      background:rgba(255,255,255,.02);
-    }
-    .sectionTitle h3{margin:0; font-size:1em}
-    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      padding:9px 12px;
-      border-radius:12px;
-      cursor:pointer;
-    }
-    .btn:hover{background:rgba(255,255,255,.06)}
-    .btn.brand{border-color:rgba(29,155,240,.45); background:rgba(29,155,240,.12)}
-    .btn.brand:hover{background:rgba(29,155,240,.18)}
-    .btn.danger{border-color:rgba(251,113,133,.45); background:rgba(251,113,133,.12)}
-    .btn.good{border-color:rgba(45,212,191,.45); background:rgba(45,212,191,.10)}
-    .btn.small{padding:7px 10px; border-radius:10px; font-size:.92em}
+    body{margin:0;background:var(--bg);color:var(--text);font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial}
+    a{color:inherit}
+    button,input,select,textarea{font:inherit}
+    .app{min-height:100vh;display:flex;justify-content:center}
+    .wrap{width:100%;max-width:var(--w);display:grid;grid-template-columns: 280px 1fr 340px;gap:14px;padding:14px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .left,.mid,.right{min-height:40px}
+    .left .card,.right .card{position:sticky;top:14px}
+    .nav{padding:12px}
+    .brand{display:flex;align-items:center;gap:10px;padding:10px 10px 14px}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#1d9bf0,#7c3aed)}
+    .brand b{font-size:18px}
+    .nav a,.nav button{display:flex;gap:10px;align-items:center;width:100%;padding:10px 12px;border-radius:12px;text-decoration:none;border:0;background:transparent;color:var(--text);cursor:pointer}
+    .nav a:hover,.nav button:hover{background:var(--panel2)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:12px}
     .muted{color:var(--muted)}
-    .divider{height:1px; background:var(--border)}
-    .input, .select, .textarea{
-      width:100%;
-      border:1px solid var(--border);
-      background:rgba(0,0,0,.35);
-      border-radius:12px;
-      padding:10px 12px;
-      outline:none;
-    }
-    .textarea{min-height:90px; resize:vertical}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-    .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
-
-    /* Center column */
-    .center{min-width:0}
-    .composer{
-      padding:14px;
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-    .avatar{
-      width:44px; height:44px; border-radius:50%;
-      background: radial-gradient(circle at 30% 20%, rgba(29,155,240,.6), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.12);
-      flex:0 0 auto;
-    }
-    .composerMain{flex:1; min-width:0}
-    .tabs{
-      display:flex; gap:8px; flex-wrap:wrap;
-      padding:12px 14px;
-      border-bottom:1px solid var(--border);
-      position:sticky; top:0; z-index:30;
-      background: rgba(0,0,0,.75);
-      backdrop-filter: blur(10px);
-    }
-
-    .feed{display:flex; flex-direction:column}
-    .post{
-      padding:14px;
-      display:flex;
-      gap:12px;
-      border-bottom:1px solid var(--border);
-      cursor:pointer;
-    }
-    .post:hover{background:rgba(255,255,255,.02)}
-    .postMain{flex:1; min-width:0}
-    .postHead{
-      display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
-    }
-    .postMeta{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
-      font-size:.92em;
-    }
-    .badge{
-      font-size:.82em;
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      color:var(--muted);
-      background:rgba(255,255,255,.03);
-      white-space:nowrap;
-    }
-    .title{
-      margin:6px 0 10px;
-      font-size:1.05em;
-      font-weight:800;
-      word-break:break-word;
-    }
-    .cover{
-      width:100%;
-      aspect-ratio:1 / 1; /* 正方形 */
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#070707;
-      overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin-top:10px;
-    }
-    .cover img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-    }
-    .actions{
-      margin-top:10px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .chip{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:7px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.03);
-      color:var(--muted);
-      font-size:.92em;
-      cursor:pointer;
-    }
-    .chip:hover{background:rgba(255,255,255,.05)}
-    .chip.liked{border-color:rgba(251,113,133,.45); color:var(--text); background:rgba(251,113,133,.10)}
-    .chip.primary{border-color:rgba(29,155,240,.45); color:var(--text); background:rgba(29,155,240,.10)}
-    .top2{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .tweetPreview{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.02);
-      border-radius:14px;
-      padding:10px 12px;
-    }
-    .tweetPreview .who{font-weight:800; font-size:.95em}
-    .tweetPreview .txt{margin-top:4px; color:var(--text); font-size:.95em; word-break:break-word}
-    .moreBtn{margin-top:6px; color:var(--brand); font-weight:700; cursor:pointer; display:inline-block}
-
-    /* Modal */
-    .backdrop{
-      position:fixed; inset:0; z-index:60;
-      background: rgba(0,0,0,.72);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-    }
-    .backdrop.show{display:flex}
-    .modal{
-      width:min(980px, 100%);
-      max-height: min(92dvh, 920px);
-      overflow:auto;
-      border:1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(10,10,10,.96);
-      box-shadow: var(--shadow);
-    }
-    .modalHeader{
-      position:sticky; top:0; z-index:10;
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      padding:12px 14px;
-      border-bottom:1px solid var(--border);
-      backdrop-filter: blur(10px);
-      background: rgba(10,10,10,.92);
-    }
-    .modalHeader .x{cursor:pointer; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03)}
+    .danger{color:var(--red)}
+    .ok{color:var(--green)}
+    .btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer}
+    .btn:hover{border-color:#333}
+    .btn.primary{background:var(--blue);border-color:transparent;color:#000;font-weight:700}
+    .btn.primary:hover{filter:brightness(1.03)}
+    .btn.ghost{background:transparent}
+    .btn.small{padding:7px 10px;border-radius:10px;font-size:13px}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#000;color:var(--text)}
+    .row{display:flex;gap:10px;align-items:center}
+    .col{display:flex;flex-direction:column;gap:10px}
+    .sep{height:1px;background:var(--line);margin:10px 0}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer}
+    .tab.active{background:var(--chip)}
+    .midHeader{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .midHeader h1{margin:0;font-size:18px}
+    .subtabs{display:flex;gap:8px;flex-wrap:wrap}
+    .feed{padding:0}
+    .post{padding:14px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:10px}
+    .avatar{width:44px;height:44px;border-radius:999px;background:#222}
+    .postTop{display:flex;justify-content:space-between;gap:10px}
+    .nick{font-weight:800}
+    .meta{color:var(--muted);font-size:12px}
+    .title{margin:6px 0 8px;font-size:15px;line-height:1.35}
+    .cover{width:100%;aspect-ratio:1/1;max-height:360px;border-radius:16px;border:1px solid var(--line);background:#050505;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .cover img{width:100%;height:100%;object-fit:cover;display:block}
+    .actions{display:flex;gap:14px;align-items:center;margin-top:10px;color:var(--muted);font-size:13px}
+    .actionBtn{border:0;background:transparent;color:inherit;cursor:pointer;padding:6px 8px;border-radius:10px}
+    .actionBtn:hover{background:var(--panel2)}
+    .twolines{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .more{color:var(--blue);cursor:pointer}
+    .rightBox{padding:12px}
+    .rightBox h3{margin:0 0 10px;font-size:14px}
+    .tagGrid{display:flex;gap:8px;flex-wrap:wrap}
+    .tag{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer}
+    .tag.active{background:var(--chip)}
+    .modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
+    .modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+    .modalHeader{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .modalHeader b{font-size:15px}
     .modalBody{padding:14px}
-    .twoCol{display:grid; grid-template-columns: 1.05fr .95fr; gap:14px}
-    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px}
-    .kpi .box{border:1px solid var(--border); background:rgba(255,255,255,.02); border-radius:14px; padding:10px}
-    .kpi .box .v{font-weight:900; font-size:1.15em}
-    .kpi .box .k{color:var(--muted); font-size:.9em}
+    .notice{padding:10px 12px;border-radius:12px;background:#0a0a0a;border:1px solid #202020;color:var(--muted);font-size:13px}
+    .err{border-color:rgba(255,77,79,.35);color:#ffd1d1;background:rgba(255,77,79,.06)}
+    .okbox{border-color:rgba(33,197,93,.35);color:#d7ffe7;background:rgba(33,197,93,.06)}
+    .hide{display:none !important;}
 
-    .googleBtn{
-      width:100%;
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(255,255,255,.06);
-      cursor:pointer;
-      font-weight:800;
+    /* mobile */
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 82px 1fr; }
+      .right{display:none;}
+      .navText{display:none;}
+      .brand b{display:none;}
+      .nav a,.nav button{justify-content:center;}
     }
-    .googleBtn:hover{background:rgba(255,255,255,.09)}
-    .gIcon{
-      width:18px; height:18px; border-radius:4px;
-      background: conic-gradient(from 45deg, #ea4335, #fbbc05, #34a853, #4285f4, #ea4335);
-    }
-
-    /* Drawer (mobile tags) */
-    .drawer{
-      position:fixed; inset:0; z-index:70;
-      display:none;
-    }
-    .drawer.show{display:block}
-    .drawer .shade{position:absolute; inset:0; background:rgba(0,0,0,.72)}
-    .drawer .sheet{
-      position:absolute; left:0; top:0; bottom:0;
-      width:min(360px, 86vw);
-      background:rgba(10,10,10,.98);
-      border-right:1px solid var(--border);
-      box-shadow: var(--shadow);
-      padding:12px;
-      overflow:auto;
-    }
-
-    /* Responsive */
-    @media (max-width: 1060px){
-      :root{ --colRight: 300px; --colLeft: 250px; }
-    }
-    @media (max-width: 920px){
-      .app{grid-template-columns: 1fr; padding:0 0 60px}
-      .left,.right{display:none}
-      .topbar{display:flex}
-      .tabs{top:52px}
-      .center{padding:0 12px}
-      .card{border-radius:18px}
+    @media (max-width: 640px){
+      .wrap{grid-template-columns: 1fr; padding:10px}
+      .left{display:none;}
+      .right{display:none;}
+      .card{border-radius:14px}
     }
   </style>
 </head>
+
 <body>
-  <div class="topbar">
-    <button class="iconBtn" id="btnOpenDrawer">☰</button>
-    <div class="brand">
-      <div class="dot"></div>
-      <div class="name">FEEx</div>
+<div class="app">
+  <div class="wrap">
+
+    <!-- LEFT NAV -->
+    <div class="left">
+      <div class="card nav">
+        <div class="brand">
+          <div class="logo"></div>
+          <b>FEEx</b>
+        </div>
+        <button onclick="go('feed')"><span>🏠</span><span class="navText">首頁</span></button>
+        <button onclick="go('predict')"><span>🔮</span><span class="navText">未來事件預測</span></button>
+        <button onclick="go('publish')"><span>🪙</span><span class="navText">看廣告拿金幣</span></button>
+        <button onclick="go('profile')"><span>👤</span><span class="navText">個人檔案</span></button>
+        <button onclick="go('rules')"><span>📜</span><span class="navText">規則 & 設定</span></button>
+        <div class="sep"></div>
+        <button class="btn primary" onclick="openAuth()">登入 / 註冊</button>
+        <button class="btn ghost" onclick="logout()">登出</button>
+        <div class="sep"></div>
+        <div class="pill">API: <span id="apiBase"></span></div>
+        <div class="pill">狀態: <span id="statusText" class="muted">未登入</span></div>
+      </div>
     </div>
-    <div style="flex:1"></div>
-    <button class="iconBtn" id="btnOpenAuth">登入</button>
-  </div>
 
-  <div class="drawer" id="drawer">
-    <div class="shade" id="drawerShade"></div>
-    <div class="sheet">
-      <div class="brand" style="padding:8px 4px 14px;">
-        <div class="dot"></div>
-        <div class="name">FEEx</div>
-      </div>
-      <div class="panel">
-        <div class="sectionTitle"><h3>分頁</h3></div>
-        <div class="nav" id="mobileNav"></div>
-      </div>
-      <div style="height:12px"></div>
-      <div class="panel">
-        <div class="sectionTitle"><h3>TAG</h3></div>
-        <div class="nav" id="mobileTags"></div>
-      </div>
-      <div style="height:12px"></div>
-      <button class="btn" id="btnCloseDrawer" style="width:100%">關閉</button>
-    </div>
-  </div>
-
-  <div class="app">
-    <!-- Left -->
-    <aside class="left">
-      <div class="panel">
-        <div class="sectionTitle">
-          <div class="brand" style="gap:8px">
-            <div class="dot"></div>
-            <div class="name">FEEx</div>
-          </div>
-          <button class="btn small" id="btnAuthLeft">登入</button>
-        </div>
-        <div class="nav" id="leftNav"></div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="panel">
-        <div class="sectionTitle">
-          <h3>TAG</h3>
-          <span class="muted" style="font-size:.9em">分類</span>
-        </div>
-        <div class="nav" id="tagNav"></div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="panel">
-        <div class="sectionTitle">
-          <h3>快捷</h3>
-        </div>
-        <div class="nav">
-          <button class="navItem" id="btnLight">
-            <div>
-              <div style="font-weight:800">開燈 / 關燈</div>
-              <div class="sub">切換亮度（demo）</div>
-            </div>
-            <div class="badge">UI</div>
-          </button>
-          <button class="navItem" id="btnFontReset">
-            <div>
-              <div style="font-weight:800">字體重置</div>
-              <div class="sub">恢復預設大小</div>
-            </div>
-            <div class="badge">A</div>
-          </button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Center -->
-    <main class="center">
+    <!-- MIDDLE -->
+    <div class="mid">
       <div class="card">
-        <div class="tabs" id="hotTabs"></div>
+        <div class="midHeader">
+          <h1 id="pageTitle">首頁</h1>
+          <div class="row">
+            <button class="btn small" onclick="refresh()">刷新</button>
+          </div>
+        </div>
 
-        <div class="composer">
-          <div class="avatar"></div>
-          <div class="composerMain">
-            <div class="row" style="justify-content:space-between; gap:10px">
-              <div class="muted" id="whoLine">尚未登入</div>
-              <div class="row">
-                <button class="btn good small" id="btnClaimAd">看廣告拿 100 GC</button>
-                <button class="btn small" id="btnRefresh">刷新</button>
+        <!-- FEED TOOLBAR -->
+        <div id="feedToolbar" style="padding:12px 14px;border-bottom:1px solid var(--line)">
+          <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div class="subtabs">
+              <button class="tab active" data-hot="day" onclick="setHot('day', this)">當日熱門</button>
+              <button class="tab" data-hot="week" onclick="setHot('week', this)">本週熱門</button>
+              <button class="tab" data-hot="month" onclick="setHot('month', this)">本月熱門</button>
+              <button class="tab" data-hot="all" onclick="setHot('all', this)">總熱門</button>
+            </div>
+            <div class="row" style="gap:8px;min-width:min(460px,100%)">
+              <input id="q" class="input" placeholder="搜尋題目..." onkeydown="if(event.key==='Enter'){refresh();}" />
+              <button class="btn" onclick="refresh()">搜尋</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGES -->
+        <div id="page_feed" class="feed"></div>
+
+        <div id="page_predict" class="feed hide" style="padding:14px">
+          <div class="notice">這裡展示「預測列表」與點進詳情（已由首頁 feed 連過去）。目前 demo 先用首頁。</div>
+        </div>
+
+        <div id="page_publish" class="feed hide" style="padding:14px">
+          <div class="col">
+            <div class="notice">按下按鈕模擬「看廣告領 100 GC」。後端有 12 小時冷卻（/api/claim-ad）。</div>
+            <button class="btn primary" onclick="claimAd()">看廣告拿金幣（+100 GC）</button>
+            <div id="claimMsg" class="notice hide"></div>
+          </div>
+        </div>
+
+        <div id="page_profile" class="feed hide" style="padding:14px">
+          <div class="col">
+            <div class="notice">個人檔案（暱稱/簽名/勝率/等級/GC/會員等級）。修改會打 /api/me PATCH。</div>
+            <div class="row" style="gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:240px">
+                <div class="muted" style="margin-bottom:6px">暱稱（20字內）</div>
+                <input id="meNick" class="input" placeholder="Nick" />
+              </div>
+              <div style="flex:1;min-width:240px">
+                <div class="muted" style="margin-bottom:6px">個人簽名（140字內）</div>
+                <input id="meBio" class="input" placeholder="Bio" />
               </div>
             </div>
 
-            <div style="height:10px"></div>
+            <div class="row" style="gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:160px">
+                <div class="muted" style="margin-bottom:6px">會員等級 Tier</div>
+                <input id="meTier" class="input" type="number" min="1" max="10" />
+              </div>
+              <div style="flex:1;min-width:160px">
+                <div class="muted" style="margin-bottom:6px">等級 Level</div>
+                <input id="meLevel" class="input" type="number" min="1" max="999" />
+              </div>
+              <div style="flex:1;min-width:160px">
+                <div class="muted" style="margin-bottom:6px">預測勝率 %</div>
+                <input id="meWin" class="input" type="number" min="0" max="100" />
+              </div>
+              <div style="flex:1;min-width:160px">
+                <div class="muted" style="margin-bottom:6px">金幣 GC</div>
+                <input id="meGC" class="input" type="number" disabled />
+              </div>
+            </div>
 
+            <div class="row" style="gap:10px;flex-wrap:wrap">
+              <button class="btn primary" onclick="saveMe()">儲存</button>
+              <button class="btn" onclick="loadMe()">重新載入</button>
+              <span id="meMsg" class="notice hide"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="page_rules" class="feed hide" style="padding:14px">
+          <div class="col">
+            <div class="notice">
+              <b>規則 & 設定（給使用者看的）</b><br><br>
+              • GC 是平台內點數，不可兌換回任何法幣/代幣。<br>
+              • 預測僅供娛樂與社群互動，結果可能不準確。<br>
+              • 參與前請自行評估風險，勿投入超出承受範圍的 GC。<br>
+              • 平台可能調整規則/參數以維護公平性與安全性。<br>
+            </div>
             <div class="row">
-              <input class="input" id="qInput" placeholder="搜尋題目（例如：世界盃、AI、總統...）" />
-            </div>
-
-            <div style="height:10px"></div>
-
-            <div class="grid3">
-              <select class="select" id="tagSelect"></select>
-              <input class="input" id="settleDateInput" placeholder="結算日期 (YYYY-MM-DD)" />
-              <input class="input" id="coverUrlInput" placeholder="封面圖片縮網址 (正方形預覽)" />
-            </div>
-
-            <div style="height:10px"></div>
-
-            <input class="input" id="titleInput" placeholder="發布預測題目（例如：2026 世足冠軍會是誰？）" />
-
-            <div style="height:10px"></div>
-
-            <textarea class="textarea" id="optionsInput" placeholder="選項（每行一個，2~12 個）
-例：
-阿根廷
-法國
-巴西
-德國"></textarea>
-
-            <div style="height:10px"></div>
-
-            <div class="row" style="justify-content:space-between">
-              <div class="muted">建立預測需扣 1000 GC（後端判斷 Tier ≥ 4）</div>
-              <button class="btn brand" id="btnCreate">發布預測</button>
+              <span class="pill">顯示設定</span>
+              <button class="btn" onclick="toggleTheme()">開燈 / 關燈</button>
+              <button class="btn" onclick="fontSize(1)">字體+</button>
+              <button class="btn" onclick="fontSize(-1)">字體-</button>
             </div>
           </div>
         </div>
 
-        <div class="divider"></div>
-        <div class="feed" id="feed"></div>
       </div>
-    </main>
+    </div>
 
-    <!-- Right -->
-    <aside class="right">
-      <div class="panel">
-        <div class="sectionTitle">
-          <h3>帳戶</h3>
-          <span class="muted" id="rightStatus">未登入</span>
-        </div>
-        <div style="padding:12px">
-          <div class="kpi">
-            <div class="box"><div class="v" id="kGC">—</div><div class="k">GC</div></div>
-            <div class="box"><div class="v" id="kTier">—</div><div class="k">會員等級</div></div>
-            <div class="box"><div class="v" id="kWin">—</div><div class="k">勝率%</div></div>
-          </div>
-
-          <div style="height:10px"></div>
-          <button class="btn" id="btnProfile" style="width:100%">個人檔案</button>
-          <div style="height:8px"></div>
-          <button class="btn" id="btnRules" style="width:100%">規則 & 設定</button>
-          <div style="height:8px"></div>
-          <button class="btn danger" id="btnLogout" style="width:100%">登出</button>
-        </div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="panel">
-        <div class="sectionTitle">
-          <h3>提示</h3>
-        </div>
-        <div style="padding:12px" class="muted">
-          <div>• 預測是平台內娛樂機制，GC 不可兌現。</div>
-          <div>• 熱門排序依投票/互動計算（後端）。</div>
-          <div>• 點貼文可看完整留言與熱門留言。</div>
-        </div>
-      </div>
-    </aside>
-  </div>
-
-  <!-- Auth Modal -->
-  <div class="backdrop" id="authModal">
-    <div class="modal">
-      <div class="modalHeader">
-        <div style="font-weight:900">登入 / 註冊</div>
-        <div class="x" id="closeAuth">✕</div>
-      </div>
-      <div class="modalBody">
-        <div class="twoCol">
-          <div class="panel">
-            <div class="sectionTitle"><h3>Email</h3><span class="muted">註冊 / 登入</span></div>
-            <div style="padding:12px">
-              <div class="grid2">
-                <input class="input" id="email" placeholder="Email" />
-                <input class="input" id="password" placeholder="Password (>=6)" type="password" />
-              </div>
-              <div style="height:10px"></div>
-              <div class="row">
-                <button class="btn brand" id="btnRegister">註冊</button>
-                <button class="btn" id="btnLogin">登入</button>
-                <span class="muted" id="authMsg"></span>
-              </div>
-              <div style="height:10px"></div>
-              <div class="divider"></div>
-              <div style="height:10px"></div>
-              <div class="muted" style="font-size:.92em">
-                登入成功後會拿到 token（存 localStorage），之後呼叫 API 會帶 Bearer token。
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="sectionTitle"><h3>Google</h3><span class="muted">一鍵登入</span></div>
-            <div style="padding:12px">
-              <button class="googleBtn" id="btnGoogle">
-                <span class="gIcon"></span>
-                <span>Continue with Google</span>
-              </button>
-              <div style="height:10px"></div>
-              <div class="muted" style="font-size:.92em">
-                這個按鈕會導到你的 Worker Google OAuth 起始網址（你後端要提供 /api/auth/google/start 之類）。
-                <br/>如果你目前後端還沒做 Google OAuth 路由，按了會提示尚未完成。
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style="height:14px"></div>
-        <div class="panel">
-          <div class="sectionTitle"><h3>小提醒</h3></div>
-          <div style="padding:12px" class="muted">
-            若你已完成 Google OAuth，回跳時你可以讓後端把 token 放在 URL query（例如 ?token=xxx），前端會自動抓取保存。
-          </div>
+    <!-- RIGHT: TAGS -->
+    <div class="right">
+      <div class="card rightBox">
+        <h3>分類 TAG</h3>
+        <div class="tagGrid" id="tagGrid"></div>
+        <div class="sep"></div>
+        <div class="notice">
+          小提醒：熱門排序是後端依 hot=day/week/month/all 計算。<br>
+          點題目可進入詳情頁（demo 先用彈窗顯示）。
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Post Detail Modal -->
-  <div class="backdrop" id="detailModal">
-    <div class="modal">
-      <div class="modalHeader">
-        <div style="font-weight:900">貼文詳情</div>
-        <div class="x" id="closeDetail">✕</div>
-      </div>
-      <div class="modalBody" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authBackdrop" class="modalBackdrop">
+  <div class="modal">
+    <div class="modalHeader">
+      <b>登入 / 註冊</b>
+      <button class="btn small" onclick="closeAuth()">✕</button>
     </div>
-  </div>
+    <div class="modalBody">
+      <div id="authMsg" class="notice hide"></div>
 
-  <!-- Profile Modal -->
-  <div class="backdrop" id="profileModal">
-    <div class="modal">
-      <div class="modalHeader">
-        <div style="font-weight:900">個人檔案</div>
-        <div class="x" id="closeProfile">✕</div>
-      </div>
-      <div class="modalBody">
-        <div class="panel">
-          <div class="sectionTitle"><h3>資訊</h3><span class="muted" id="profileEmail">—</span></div>
-          <div style="padding:12px">
-            <div class="grid2">
-              <div>
-                <div class="muted">暱稱</div>
-                <input class="input" id="meNick" placeholder="暱稱（最多20字）"/>
-              </div>
-              <div>
-                <div class="muted">預測勝率(%)</div>
-                <input class="input" id="meWin" placeholder="0~100"/>
-              </div>
-            </div>
-            <div style="height:10px"></div>
-            <div class="grid2">
-              <div>
-                <div class="muted">等級(Level)</div>
-                <input class="input" id="meLevel" placeholder="1~999"/>
-              </div>
-              <div>
-                <div class="muted">會員等級(Tier)</div>
-                <input class="input" id="meTier" placeholder="1~10"/>
-              </div>
-            </div>
-            <div style="height:10px"></div>
-            <div>
-              <div class="muted">個人簽名</div>
-              <textarea class="textarea" id="meBio" placeholder="最多140字"></textarea>
-            </div>
-            <div style="height:10px"></div>
-            <div class="panel" style="padding:12px; background:rgba(255,255,255,.02)">
-              <div class="row" style="justify-content:space-between">
-                <div>
-                  <div style="font-weight:900">字體大小</div>
-                  <div class="muted" style="font-size:.92em">只影響本機顯示（localStorage）</div>
-                </div>
-                <div class="row">
-                  <button class="btn small" id="fontMinus">A-</button>
-                  <button class="btn small" id="fontPlus">A+</button>
-                </div>
-              </div>
-            </div>
-
-            <div style="height:10px"></div>
-            <div class="row">
-              <button class="btn brand" id="btnSaveMe">儲存</button>
-              <span class="muted" id="profileMsg"></span>
-            </div>
-          </div>
+      <div class="col">
+        <div>
+          <div class="muted" style="margin-bottom:6px">Email</div>
+          <input id="email" class="input" placeholder="you@example.com" autocomplete="email" />
         </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px">Password</div>
+          <input id="password" class="input" type="password" placeholder="至少 6 碼" autocomplete="current-password" />
+        </div>
+
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <button class="btn primary" onclick="doLogin()">登入</button>
+          <button class="btn" onclick="doRegister()">註冊</button>
+          <button class="btn ghost" onclick="closeAuth()">取消</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="notice">
+          <b>Google 登入</b><br>
+          你後端若已完成 Google OAuth 路由（例如 /api/auth/google/start /callback），把下面按鈕的連結改成你的路由即可。
+          如果你後端目前還沒有 Google OAuth 路由，先不要按也沒關係。
+        </div>
+        <button class="btn" onclick="googleStart()">使用 Google 登入</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Rules & Settings Modal -->
-  <div class="backdrop" id="rulesModal">
-    <div class="modal">
-      <div class="modalHeader">
-        <div style="font-weight:900">規則 & 設定</div>
-        <div class="x" id="closeRules">✕</div>
-      </div>
-      <div class="modalBody">
-        <div class="panel">
-          <div class="sectionTitle">
-            <h3>給使用者看的使用風險</h3>
-            <span class="muted">請務必閱讀</span>
-          </div>
-          <div style="padding:12px" class="muted">
-            <div style="margin-bottom:8px">
-              1) 本平台之預測、投票與互動屬於<strong>娛樂/社群</strong>用途，GC 為平台內部點數，<strong>不可兌現</strong>、不可要求平台或任何人返還等值財產。
-            </div>
-            <div style="margin-bottom:8px">
-              2) 預測結果、熱門排序、留言內容由使用者產生，平台不保證其正確性與完整性。
-            </div>
-            <div style="margin-bottom:8px">
-              3) 你必須自行評估使用本平台的時間成本與資訊風險；平台不提供投資、理財或法律建議。
-            </div>
-            <div>
-              4) 平台可依規則進行管理（例如：刪除違規內容、限制參與），並可能調整參數（冷卻時間、費用等）。
-            </div>
-          </div>
-        </div>
-
-        <div style="height:14px"></div>
-
-        <div class="panel">
-          <div class="sectionTitle"><h3>設定</h3><span class="muted">UI</span></div>
-          <div style="padding:12px">
-            <div class="row">
-              <button class="btn" id="btnLight2">開燈 / 關燈</button>
-              <button class="btn" id="btnFontReset2">字體重置</button>
-            </div>
-          </div>
-        </div>
-
-        <div style="height:14px"></div>
-
-        <div class="panel">
-          <div class="sectionTitle"><h3>規則摘要</h3><span class="muted">demo</span></div>
-          <div style="padding:12px" class="muted">
-            <div>• 看廣告每 12 小時可領 100 GC（後端判斷冷卻）。</div>
-            <div>• Tier ≥ 4 可建立預測，建立費 1000 GC（後端判斷）。</div>
-            <div>• 投票投注最少 100 GC（目前後端投票是「1票」示範，你之後可把投注額與配分加回去）。</div>
-          </div>
-        </div>
-      </div>
+<!-- DETAIL MODAL -->
+<div id="detailBackdrop" class="modalBackdrop">
+  <div class="modal">
+    <div class="modalHeader">
+      <b id="detailTitle">題目</b>
+      <button class="btn small" onclick="closeDetail()">✕</button>
     </div>
+    <div class="modalBody" id="detailBody"></div>
   </div>
+</div>
 
 <script>
-/** =========================
- *  CONFIG
- *  ========================= */
-const API_BASE = "https://api.feex.win"; // 你的 Worker API
-const TAGS = [
-  { id:"all", name:"全部" },
-  { id:"sports", name:"運動" },
-  { id:"current", name:"時勢" },
-  { id:"politics", name:"政治" },
-  { id:"tech", name:"科技" },
-  { id:"finance", name:"金融" },
-  { id:"ent", name:"娛樂" },
-];
+  // ====== CONFIG ======
+  const API_BASE = "https://api.feex.win"; // ← 確認這是你的 Worker 自訂網域
+  document.getElementById("apiBase").textContent = API_BASE.replace("https://","");
 
-const NAV = [
-  { id:"home", name:"首頁", sub:"熱門預測" },
-  { id:"profile", name:"個人檔案", sub:"暱稱/簽名/字體" },
-  { id:"rules", name:"規則&設定", sub:"風險與UI" },
-];
+  // TAGS
+  const TAGS = ["all","sport","news","politics","tech","finance","ent","games"];
+  const TAG_LABEL = {all:"全部", sport:"運動", news:"時勢", politics:"政治", tech:"科技", finance:"金融", ent:"娛樂", games:"遊戲"};
 
-const HOTS = [
-  { id:"day", name:"當日熱門" },
-  { id:"week", name:"本週熱門" },
-  { id:"month", name:"本月熱門" },
-  { id:"all", name:"總熱門" },
-];
+  // ====== STATE ======
+  let state = {
+    page: "feed",
+    tag: "all",
+    hot: "day",
+    q: "",
+    token: localStorage.getItem("token") || "",
+    me: null,
+  };
 
-/** =========================
- *  STATE
- *  ========================= */
-let state = {
-  hot:"day",
-  tag:"all",
-  q:"",
-  token: localStorage.getItem("feex_token") || "",
-  me: null,
-  theme: localStorage.getItem("feex_theme") || "dark",
-  fontScale: Number(localStorage.getItem("feex_fontScale") || "1"),
-  predictions: [],
-};
+  // ====== HELPERS ======
+  const $ = (id)=>document.getElementById(id);
+  function show(el){ el.classList.remove("hide"); }
+  function hide(el){ el.classList.add("hide"); }
+  function setMsg(el, text, kind="info"){
+    el.textContent = text;
+    el.className = "notice" + (kind==="err" ? " err" : kind==="ok" ? " okbox" : "");
+    show(el);
+  }
+  function clearMsg(el){ hide(el); el.textContent=""; }
 
-document.documentElement.style.setProperty("--fontScale", String(state.fontScale));
+  async function api(path, opts={}){
+    const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+    if(state.token) headers["Authorization"] = "Bearer " + state.token;
+    const res = await fetch(API_BASE + path, Object.assign({}, opts, {headers}));
+    const data = await res.json().catch(()=>({ok:false,error:"Bad JSON"}));
+    return {res, data};
+  }
 
-/** =========================
- *  UTIL
- *  ========================= */
-const $ = (id)=>document.getElementById(id);
-const esc = (s)=>String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-const fmtDate = (msOrIso)=>{
-  if(!msOrIso) return "";
-  if(typeof msOrIso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(msOrIso)) return msOrIso;
-  const d = new Date(Number(msOrIso));
-  if (isNaN(d.getTime())) return String(msOrIso);
-  return d.toISOString().slice(0,10);
-};
-function toast(msg){
-  alert(msg);
-}
-async function api(path, opts={}){
-  const headers = Object.assign({ "Content-Type":"application/json" }, opts.headers||{});
-  if(state.token) headers["Authorization"] = "Bearer " + state.token;
-  const res = await fetch(API_BASE + path, { ...opts, headers });
-  const data = await res.json().catch(()=>({ ok:false, error:"Bad JSON" }));
-  if(!res.ok && !data.ok && data.error === "Unauthorized"){
-    // auto logout
+  function fmtTime(ms){
+    try { return new Date(Number(ms)).toLocaleString(); } catch { return ""; }
+  }
+
+  // ====== NAV ======
+  function go(page){
+    state.page = page;
+    ["feed","predict","publish","profile","rules"].forEach(p=>{
+      const el = $("page_"+p);
+      if(!el) return;
+      if(p===page) el.classList.remove("hide");
+      else el.classList.add("hide");
+    });
+    $("feedToolbar").style.display = page==="feed" ? "block" : "none";
+    $("pageTitle").textContent =
+      page==="feed" ? "首頁" :
+      page==="predict" ? "未來事件預測" :
+      page==="publish" ? "看廣告拿金幣" :
+      page==="profile" ? "個人檔案" : "規則 & 設定";
+
+    if(page==="profile") loadMe();
+    if(page==="feed") refresh();
+  }
+
+  // ====== AUTH MODAL ======
+  function openAuth(){ $("authBackdrop").style.display="flex"; clearMsg($("authMsg")); }
+  function closeAuth(){ $("authBackdrop").style.display="none"; }
+  function closeDetail(){ $("detailBackdrop").style.display="none"; }
+
+  async function doRegister(){
+    clearMsg($("authMsg"));
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if(!email || !email.includes("@")) return setMsg($("authMsg"), "Email 格式不正確", "err");
+    if((password||"").length < 6) return setMsg($("authMsg"), "密碼至少 6 碼", "err");
+
+    const {data} = await api("/api/register", {method:"POST", body: JSON.stringify({email,password})});
+    if(!data.ok) return setMsg($("authMsg"), data.error || "註冊失敗", "err");
+    setMsg($("authMsg"), "註冊成功，請登入", "ok");
+  }
+
+  async function doLogin(){
+    clearMsg($("authMsg"));
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if(!email || !password) return setMsg($("authMsg"), "請輸入 Email 與密碼", "err");
+
+    const {data} = await api("/api/login", {method:"POST", body: JSON.stringify({email,password})});
+    if(!data.ok) return setMsg($("authMsg"), data.error || "登入失敗", "err");
+
+    state.token = data.token;
+    localStorage.setItem("token", state.token);
+    await loadMe();
+    setStatus();
+    setMsg($("authMsg"), "登入成功！", "ok");
+    setTimeout(()=>closeAuth(), 600);
+  }
+
+  function logout(){
     state.token = "";
-    localStorage.removeItem("feex_token");
     state.me = null;
-    renderMe();
+    localStorage.removeItem("token");
+    setStatus();
+    alert("已登出");
   }
-  return data;
-}
 
-/** =========================
- *  UI init
- *  ========================= */
-function buildHotTabs(){
-  const el = $("hotTabs");
-  el.innerHTML = HOTS.map(h=>(
-    `<span class="pill ${state.hot===h.id?'active':''}" data-hot="${h.id}">${esc(h.name)}</span>`
-  )).join("");
-  el.onclick = (e)=>{
-    const t = e.target.closest("[data-hot]");
-    if(!t) return;
-    state.hot = t.dataset.hot;
-    buildHotTabs();
-    loadFeed();
-  };
-}
-function buildTags(){
-  const tagNav = $("tagNav");
-  const mobileTags = $("mobileTags");
-  const tagSelect = $("tagSelect");
-  tagSelect.innerHTML = TAGS.filter(x=>x.id!=="all").map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
+  // Google OAuth start (你後端若有路由就改這裡)
+  function googleStart(){
+    // 例：window.location.href = API_BASE + "/api/auth/google/start";
+    alert("如果你後端已做 Google OAuth，請把 googleStart() 改成導向你的 /api/auth/google/start");
+  }
 
-  const tagBtns = TAGS.map(t=>{
-    const active = state.tag===t.id;
-    return `<button class="navItem ${active?'active':''}" data-tag="${t.id}">
-      <div style="font-weight:800">${esc(t.name)}</div>
-      <div class="badge">${active?'ON':''}</div>
-    </button>`;
-  }).join("");
+  // ====== ME ======
+  function setStatus(){
+    const t = state.me ? `已登入：${state.me.nick}（Tier ${state.me.tier} / GC ${state.me.gc}）` : "未登入";
+    $("statusText").textContent = t;
+    $("statusText").className = state.me ? "ok" : "muted";
+  }
 
-  tagNav.innerHTML = tagBtns;
-  mobileTags.innerHTML = tagBtns;
+  async function loadMe(){
+    if(!state.token) { state.me=null; setStatus(); return; }
+    const {data} = await api("/api/me", {method:"GET"});
+    if(!data.ok){
+      // token 失效
+      state.token=""; localStorage.removeItem("token");
+      state.me=null; setStatus();
+      return;
+    }
+    state.me = data.user;
+    setStatus();
+    // fill profile
+    $("meNick").value = state.me.nick || "";
+    $("meBio").value = state.me.bio || "";
+    $("meTier").value = state.me.tier || 1;
+    $("meLevel").value = state.me.level || 1;
+    $("meWin").value = state.me.winRate ?? 50;
+    $("meGC").value = state.me.gc ?? 0;
+  }
 
-  const onClick = (e)=>{
-    const b = e.target.closest("[data-tag]");
-    if(!b) return;
-    state.tag = b.dataset.tag;
-    buildTags();
-    loadFeed();
-    closeDrawer();
-  };
-  tagNav.onclick = onClick;
-  mobileTags.onclick = onClick;
-}
-function buildNav(){
-  const leftNav = $("leftNav");
-  const mobileNav = $("mobileNav");
-  const html = NAV.map(n=>`
-    <button class="navItem" data-nav="${n.id}">
+  async function saveMe(){
+    if(!state.token) return alert("請先登入");
+    clearMsg($("meMsg"));
+    const body = {
+      nick: $("meNick").value.trim(),
+      bio: $("meBio").value.trim(),
+      tier: Number($("meTier").value||1),
+      level: Number($("meLevel").value||1),
+      winRate: Number($("meWin").value||50),
+    };
+    const {data} = await api("/api/me", {method:"PATCH", body: JSON.stringify(body)});
+    if(!data.ok) return setMsg($("meMsg"), data.error || "儲存失敗", "err");
+    state.me = data.user;
+    $("meGC").value = state.me.gc ?? 0;
+    setStatus();
+    setMsg($("meMsg"), "已儲存", "ok");
+  }
+
+  // ====== CLAIM AD ======
+  async function claimAd(){
+    $("claimMsg").classList.add("hide");
+    if(!state.token) return alert("請先登入");
+    const {data} = await api("/api/claim-ad", {method:"POST", body: "{}"});
+    if(!data.ok){
+      if(data.error==="Cooldown"){
+        const m = Math.ceil((data.remainingMs||0)/60000);
+        return setMsg($("claimMsg"), `冷卻中，約 ${m} 分鐘後可再領`, "err");
+      }
+      return setMsg($("claimMsg"), data.error || "領取失敗", "err");
+    }
+    await loadMe();
+    setMsg($("claimMsg"), `成功 +${data.reward} GC，目前餘額：${data.newBalance}`, "ok");
+  }
+
+  // ====== FEED ======
+  function setHot(hot, btn){
+    state.hot = hot;
+    document.querySelectorAll("[data-hot]").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    refresh();
+  }
+
+  function renderTags(){
+    const grid = $("tagGrid");
+    grid.innerHTML = "";
+    TAGS.forEach(t=>{
+      const b = document.createElement("button");
+      b.className = "tag" + (state.tag===t ? " active":"");
+      b.textContent = TAG_LABEL[t] || t;
+      b.onclick = ()=>{ state.tag=t; renderTags(); refresh(); };
+      grid.appendChild(b);
+    });
+  }
+
+  function ellipsize(text, n=120){
+    text = String(text||"");
+    if(text.length<=n) return {short:text, cut:false};
+    return {short:text.slice(0,n)+"…", cut:true};
+  }
+
+  function postEl(p){
+    const div = document.createElement("div");
+    div.className = "post";
+
+    const av = document.createElement("div");
+    av.className = "avatar";
+
+    const main = document.createElement("div");
+
+    const top = document.createElement("div");
+    top.className = "postTop";
+    top.innerHTML = `
       <div>
-        <div style="font-weight:900">${esc(n.name)}</div>
-        <div class="sub">${esc(n.sub)}</div>
+        <span class="nick">@${(p.ownerNick || "unknown")}</span>
+        <span class="meta"> · ${TAG_LABEL[p.tag]||p.tag} · ${p.settleDate}</span>
       </div>
-      <div class="badge">→</div>
-    </button>
-  `).join("");
-  leftNav.innerHTML = html;
-  mobileNav.innerHTML = html;
+      <span class="meta">${fmtTime(p.createdAt)}</span>
+    `;
 
-  const onClick = (e)=>{
-    const b = e.target.closest("[data-nav]");
-    if(!b) return;
-    const id = b.dataset.nav;
-    if(id==="profile") openProfile();
-    if(id==="rules") openRules();
-    if(id==="home") window.scrollTo({ top:0, behavior:"smooth" });
-    closeDrawer();
-  };
-  leftNav.onclick = onClick;
-  mobileNav.onclick = onClick;
-}
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = p.title;
 
-/** Drawer */
-function openDrawer(){ $("drawer").classList.add("show"); }
-function closeDrawer(){ $("drawer").classList.remove("show"); }
+    const cover = document.createElement("div");
+    cover.className = "cover";
+    if(p.coverUrl){
+      const img = document.createElement("img");
+      img.src = p.coverUrl;
+      img.alt = "cover";
+      cover.appendChild(img);
+    }else{
+      cover.innerHTML = `<span class="muted">（無封面）</span>`;
+    }
 
-/** Modals */
-function showModal(id){ $(id).classList.add("show"); }
-function hideModal(id){ $(id).classList.remove("show"); }
-
-/** =========================
- *  Auth (Email)
- *  ========================= */
-async function doRegister(){
-  $("authMsg").textContent = "處理中…";
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const r = await api("/api/register", { method:"POST", body: JSON.stringify({ email, password })});
-  if(!r.ok){
-    $("authMsg").textContent = r.error || "註冊失敗";
-    return;
-  }
-  $("authMsg").textContent = "註冊成功，請登入";
-}
-async function doLogin(){
-  $("authMsg").textContent = "處理中…";
-  const email = $("email").value.trim();
-  const password = $("password").value;
-  const r = await api("/api/login", { method:"POST", body: JSON.stringify({ email, password })});
-  if(!r.ok){
-    $("authMsg").textContent = r.error || "登入失敗";
-    return;
-  }
-  state.token = r.token;
-  localStorage.setItem("feex_token", state.token);
-  $("authMsg").textContent = "登入成功";
-  await loadMe();
-  hideModal("authModal");
-  loadFeed();
-}
-
-/** Google button (placeholder route) */
-function goGoogle(){
-  // 你後端若有 Google OAuth，建議提供一個 start endpoint，回跳後帶 ?token=xxx
-  // 例如：/api/auth/google/start
-  const url = API_BASE + "/api/auth/google/start";
-  // 先探測一下路由存不存在
-  fetch(url, { method:"GET" }).then(r=>{
-    if(r.status === 404) throw new Error("not ready");
-    window.location.href = url;
-  }).catch(()=>{
-    toast("Google OAuth 後端路由尚未完成（需要 /api/auth/google/start）");
-  });
-}
-
-/** =========================
- *  Me / Profile
- *  ========================= */
-async function loadMe(){
-  if(!state.token) { state.me=null; renderMe(); return; }
-  const r = await api("/api/me", { method:"GET" });
-  if(!r.ok){ state.me=null; renderMe(); return; }
-  state.me = r.user;
-  renderMe();
-}
-function renderMe(){
-  const who = state.me ? `已登入：${state.me.nick}（GC ${state.me.gc}）` : "尚未登入";
-  $("whoLine").textContent = who;
-  $("rightStatus").textContent = state.me ? state.me.email : "未登入";
-  $("kGC").textContent = state.me ? String(state.me.gc) : "—";
-  $("kTier").textContent = state.me ? String(state.me.tier) : "—";
-  $("kWin").textContent = state.me ? String(state.me.winRate ?? state.me.win_rate ?? "—") : "—";
-  $("btnLogout").style.display = state.me ? "block" : "none";
-}
-
-function openProfile(){
-  if(!state.me) { showModal("authModal"); return; }
-  $("profileEmail").textContent = state.me.email;
-  $("meNick").value = state.me.nick || "";
-  $("meBio").value = state.me.bio || "";
-  $("meTier").value = state.me.tier ?? "";
-  $("meLevel").value = state.me.level ?? "";
-  $("meWin").value = state.me.winRate ?? state.me.win_rate ?? "";
-  $("profileMsg").textContent = "";
-  showModal("profileModal");
-}
-async function saveProfile(){
-  if(!state.me) return;
-  $("profileMsg").textContent = "儲存中…";
-  const body = {
-    nick: $("meNick").value.trim(),
-    bio: $("meBio").value.trim(),
-    tier: $("meTier").value.trim(),
-    level: $("meLevel").value.trim(),
-    winRate: $("meWin").value.trim(),
-  };
-  const r = await api("/api/me", { method:"PATCH", body: JSON.stringify(body) });
-  if(!r.ok){ $("profileMsg").textContent = r.error || "儲存失敗"; return; }
-  state.me = r.user;
-  $("profileMsg").textContent = "已儲存";
-  renderMe();
-}
-
-function openRules(){ showModal("rulesModal"); }
-
-/** =========================
- *  Feed
- *  ========================= */
-function truncateText(s, max=70){
-  const t = String(s||"");
-  if(t.length<=max) return { short:t, cut:false };
-  return { short:t.slice(0,max) + "…", cut:true };
-}
-
-async function loadFeed(){
-  const q = state.q;
-  const qs = new URLSearchParams();
-  qs.set("hot", state.hot);
-  qs.set("tag", state.tag);
-  if(q) qs.set("q", q);
-  const r = await api("/api/predictions?" + qs.toString(), { method:"GET" });
-  if(!r.ok){
-    $("feed").innerHTML = `<div style="padding:14px" class="muted">載入失敗：${esc(r.error||"")}</div>`;
-    return;
-  }
-  state.predictions = r.predictions || [];
-  renderFeed();
-}
-
-function renderFeed(){
-  const feed = $("feed");
-  if(!state.predictions.length){
-    feed.innerHTML = `<div style="padding:14px" class="muted">目前沒有資料</div>`;
-    return;
-  }
-  feed.innerHTML = state.predictions.map(p=>{
-    const owner = p.ownerNick || p.owner_nick || p.owner || "—"; // 後端如果沒回會顯示 —
-    const top2 = Array.isArray(p.topComments) ? p.topComments : [];
-    const top2Html = top2.map(c=>{
-      const tr = truncateText(c.text, 70);
+    const tc = document.createElement("div");
+    tc.style.marginTop = "10px";
+    tc.innerHTML = (p.topComments||[]).map((c,idx)=>{
+      const {short,cut} = ellipsize(c.text, 90);
+      const id = `c_${p.id}_${idx}`;
       return `
-        <div class="tweetPreview" data-stop="1">
-          <div class="who">${esc(c.author || "User")} <span class="muted">· ❤ ${Number(c.likes||0)}</span></div>
-          <div class="txt" data-full="${esc(c.text)}" data-cut="${tr.cut ? '1':'0'}">${esc(tr.short)}</div>
-          ${tr.cut ? `<span class="moreBtn" data-more="1">顯示更多</span>` : ``}
+        <div class="meta" style="margin:6px 0 0">
+          ❤️ ${c.likes} · <b>@${c.author}</b>：
+          <span id="${id}" class="${cut?'twolines':''}">${short}</span>
+          ${cut ? `<span class="more" onclick="expand('${id}', ${JSON.stringify(c.text).replace(/"/g,'&quot;')})">顯示更多</span>` : ""}
         </div>
       `;
     }).join("");
 
-    return `
-      <div class="post" data-id="${esc(p.id)}">
-        <div class="avatar"></div>
-        <div class="postMain">
-          <div class="postHead">
-            <div class="postMeta">
-              <span style="font-weight:900">${esc(owner)}</span>
-              <span class="muted">·</span>
-              <span class="muted">${esc(fmtDate(p.createdAt))}</span>
-              <span class="badge">${esc(tagName(p.tag))}</span>
-              <span class="badge">結算 ${esc(fmtDate(p.settleDate))}</span>
-            </div>
-            <div class="muted" style="font-size:.92em">❤ ${Number(p.likes||0)} · 💬 ${Number(p.commentsCount||0)}</div>
-          </div>
-
-          <div class="title">${esc(p.title)}</div>
-
-          ${p.coverUrl ? `<div class="cover"><img src="${esc(p.coverUrl)}" alt="cover" loading="lazy"/></div>` : ""}
-
-          <div class="actions" data-stop="1">
-            <span class="chip primary" data-open="1">查看</span>
-            <span class="chip ${Number(p.likes||0)>0?'':'']}" data-likepred="${esc(p.id)}">❤ ${Number(p.likes||0)}</span>
-          </div>
-
-          ${top2.length ? `<div class="top2" data-stop="1">${top2Html}</div>` : ""}
-        </div>
-      </div>
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    actions.innerHTML = `
+      <button class="actionBtn" title="詳細" onclick="openDetail('${p.id}')">💬 ${p.commentsCount||0}</button>
+      <span>❤️ ${p.likes||0}</span>
+      <span>🗳️ ${p.totalVotes||0}</span>
+      <button class="actionBtn" onclick="openDetail('${p.id}')">查看完整</button>
     `;
-  }).join("");
 
-  feed.onclick = async (e)=>{
-    // prevent bubbling for buttons
-    if(e.target.closest("[data-stop]")){
-      // "顯示更多"
-      const more = e.target.closest("[data-more]");
-      if(more){
-        const box = more.closest(".tweetPreview");
-        const txt = box.querySelector(".txt");
-        txt.textContent = txt.dataset.full;
-        more.remove();
-        return;
-      }
-      // like preview post
-      const like = e.target.closest("[data-likepred]");
-      if(like){
-        if(!state.me){ showModal("authModal"); return; }
-        const id = like.dataset.likepred;
-        const r = await api(`/api/predictions/${encodeURIComponent(id)}/like`, { method:"POST" });
-        if(!r.ok){ toast(r.error||"失敗"); return; }
-        loadFeed();
-        return;
-      }
-      // open detail
-      const open = e.target.closest("[data-open]");
-      if(open){
-        const post = e.target.closest(".post");
-        if(post) openDetail(post.dataset.id);
-        return;
-      }
-    }
-    // open detail when click post
-    const post = e.target.closest(".post");
-    if(post) openDetail(post.dataset.id);
-  };
-}
+    main.appendChild(top);
+    main.appendChild(title);
+    main.appendChild(cover);
+    main.appendChild(tc);
+    main.appendChild(actions);
 
-function tagName(id){
-  const t = TAGS.find(x=>x.id===id);
-  return t ? t.name : id;
-}
-
-/** =========================
- *  Create prediction
- *  ========================= */
-async function createPrediction(){
-  if(!state.me){ showModal("authModal"); return; }
-  const title = $("titleInput").value.trim();
-  const tag = $("tagSelect").value;
-  const settleDate = $("settleDateInput").value.trim();
-  const coverUrl = $("coverUrlInput").value.trim();
-  const options = $("optionsInput").value.split("\n").map(s=>s.trim()).filter(Boolean);
-
-  const r = await api("/api/predictions", {
-    method:"POST",
-    body: JSON.stringify({ title, tag, settleDate, coverUrl, options })
-  });
-  if(!r.ok){
-    toast(r.error || "發布失敗");
-    return;
+    div.appendChild(av);
+    div.appendChild(main);
+    return div;
   }
-  toast("發布成功");
-  $("titleInput").value = "";
-  $("optionsInput").value = "";
-  $("coverUrlInput").value = "";
+
+  // 用於「顯示更多」
+  window.expand = (id, fullText)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove("twolines");
+    el.textContent = fullText;
+    // 移除旁邊的「顯示更多」
+    const sib = el.nextElementSibling;
+    if(sib && sib.classList.contains("more")) sib.remove();
+  };
+
+  async function refresh(){
+    if(state.page!=="feed") return;
+    state.q = $("q").value.trim();
+
+    const params = new URLSearchParams();
+    params.set("tag", state.tag);
+    params.set("hot", state.hot);
+    if(state.q) params.set("q", state.q);
+
+    const feed = $("page_feed");
+    feed.innerHTML = `<div style="padding:14px" class="muted">載入中...</div>`;
+
+    const {data} = await api("/api/predictions?"+params.toString(), {method:"GET"});
+    if(!data.ok){
+      feed.innerHTML = `<div style="padding:14px" class="danger">載入失敗：${data.error||"error"}</div>`;
+      return;
+    }
+
+    // ⚠️ 需要後端回 ownerNick。若你後端尚未做，我下面會說要改哪裡。
+    feed.innerHTML = "";
+    (data.predictions||[]).forEach(p=> feed.appendChild(postEl(p)));
+    if((data.predictions||[]).length===0){
+      feed.innerHTML = `<div style="padding:14px" class="muted">目前沒有內容</div>`;
+    }
+  }
+
+  // ====== DETAIL ======
+  async function openDetail(predId){
+    $("detailBackdrop").style.display = "flex";
+    $("detailTitle").textContent = "載入中...";
+    $("detailBody").innerHTML = `<div class="muted">loading...</div>`;
+
+    const {data} = await api("/api/predictions/"+predId, {method:"GET"});
+    if(!data.ok){
+      $("detailTitle").textContent = "錯誤";
+      $("detailBody").innerHTML = `<div class="danger">${data.error||"error"}</div>`;
+      return;
+    }
+    const p = data.prediction;
+    $("detailTitle").textContent = p.title;
+
+    const cover = p.coverUrl ? `<div class="cover" style="margin:10px 0"><img src="${p.coverUrl}" /></div>` : "";
+    const opts = (p.options||[]).map(o=>{
+      const my = p.myVote===o.id ? " (已投)" : "";
+      return `<button class="btn" style="width:100%;text-align:left" onclick="doVote('${predId}','${o.id}')">🗳️ ${o.text} · ${o.votes}${my}</button>`;
+    }).join("");
+
+    const comments = (p.comments||[]).slice(0,200).map(c=>{
+      return `
+        <div style="padding:10px 0;border-top:1px solid var(--line)">
+          <div class="row" style="justify-content:space-between">
+            <div><b>@${c.author}</b> <span class="meta">· ${fmtTime(c.createdAt)}</span></div>
+            <button class="btn small" onclick="likeComment('${c.id}')">❤️ ${c.likes}</button>
+          </div>
+          <div style="margin-top:6px;white-space:pre-wrap">${escapeHtml(c.text)}</div>
+        </div>
+      `;
+    }).join("");
+
+    $("detailBody").innerHTML = `
+      <div class="pill">${TAG_LABEL[p.tag]||p.tag} · 結算日 ${p.settleDate}</div>
+      ${cover}
+      <div class="row" style="gap:10px;flex-wrap:wrap;margin:10px 0">
+        <button class="btn" onclick="likePred('${predId}')">❤️ ${p.likes} ${p.likedByMe ? "(已讚)" : ""}</button>
+        <span class="pill">留言 ${p.commentsCount}</span>
+        <span class="pill">總票數 ${p.totalVotes}</span>
+      </div>
+
+      <div class="col" style="gap:8px">
+        ${opts}
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="col">
+        <textarea id="cText" class="input" rows="3" placeholder="留言（300字內）"></textarea>
+        <button class="btn primary" onclick="postComment('${predId}')">送出留言</button>
+      </div>
+
+      <div class="sep"></div>
+      <div><b>留言</b></div>
+      <div>${comments || `<div class="muted" style="padding:8px 0">暫無留言</div>`}</div>
+    `;
+  }
+
+  async function doVote(predId, optionId){
+    if(!state.token) return openAuth();
+    const {data} = await api(`/api/predictions/${predId}/vote`, {method:"POST", body: JSON.stringify({optionId})});
+    if(!data.ok) return alert(data.error || "投票失敗");
+    await openDetail(predId);
+    await refresh();
+  }
+  async function likePred(predId){
+    if(!state.token) return openAuth();
+    const {data} = await api(`/api/predictions/${predId}/like`, {method:"POST", body:"{}"});
+    if(!data.ok) return alert(data.error || "按讚失敗");
+    await openDetail(predId);
+    await refresh();
+  }
+  async function postComment(predId){
+    if(!state.token) return openAuth();
+    const text = $("cText").value.trim();
+    if(!text) return alert("請輸入留言");
+    const {data} = await api(`/api/predictions/${predId}/comments`, {method:"POST", body: JSON.stringify({text})});
+    if(!data.ok) return alert(data.error || "送出失敗");
+    $("cText").value = "";
+    await openDetail(predId);
+    await refresh();
+  }
+  async function likeComment(commentId){
+    if(!state.token) return openAuth();
+    const {data} = await api(`/api/comments/${commentId}/like`, {method:"POST", body:"{}"});
+    if(!data.ok) return alert(data.error || "按讚失敗");
+    // 重新開 detail 會重刷 likes
+    // 取目前 modal title 裡的 pred id 比較麻煩，直接提示使用者刷新即可（或你可自行做 state.detailPredId）
+    alert("已更新，請關閉再重開詳情或刷新頁面");
+    await refresh();
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  // ====== SETTINGS ======
+  function toggleTheme(){
+    // 簡易：黑/更黑（demo）
+    const r = document.documentElement.style;
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    if(bg==="#000"){
+      r.setProperty("--bg", "#f6f6f6");
+      r.setProperty("--panel", "#ffffff");
+      r.setProperty("--panel2", "#f3f4f6");
+      r.setProperty("--text", "#111");
+      r.setProperty("--muted", "#555");
+      r.setProperty("--line", "#e5e7eb");
+      r.setProperty("--chip", "#eef2f7");
+    }else{
+      r.setProperty("--bg", "#000");
+      r.setProperty("--panel", "#0b0b0b");
+      r.setProperty("--panel2", "#111");
+      r.setProperty("--text", "#e7e7e7");
+      r.setProperty("--muted", "#9aa0a6");
+      r.setProperty("--line", "#222");
+      r.setProperty("--chip", "#16181c");
+    }
+  }
+  function fontSize(delta){
+    const cur = parseFloat(getComputedStyle(document.body).fontSize);
+    const next = Math.max(12, Math.min(20, cur + delta));
+    document.body.style.fontSize = next + "px";
+  }
+
+  // ====== INIT ======
+  renderTags();
+  go("feed");
   loadMe();
-  loadFeed();
-}
-
-/** =========================
- *  Detail view
- *  ========================= */
-async function openDetail(predId){
-  const r = await api(`/api/predictions/${encodeURIComponent(predId)}`, { method:"GET" });
-  if(!r.ok){ toast(r.error || "載入失敗"); return; }
-  const p = r.prediction;
-
-  const opts = (p.options||[]).map(o=>{
-    const pct = p.totalVotes ? Math.round((o.votes / p.totalVotes)*100) : 0;
-    const mine = (p.myVote && p.myVote===o.id);
-    return `
-      <div class="panel" style="padding:12px; background:rgba(255,255,255,.02); border-radius:14px; cursor:pointer"
-           data-option="${esc(o.id)}" data-pred="${esc(p.id)}">
-        <div style="display:flex; justify-content:space-between; gap:10px">
-          <div style="font-weight:900">${esc(o.text)}</div>
-          <div class="muted">${Number(o.votes)}票 · ${pct}% ${mine? "· 你已選": ""}</div>
-        </div>
-        <div style="height:8px"></div>
-        <div style="height:8px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden">
-          <div style="height:100%; width:${pct}%; background:rgba(29,155,240,.65)"></div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  const comments = (p.comments||[]);
-  const hotComments = [...comments].sort((a,b)=>(b.likes||0)-(a.likes||0)).slice(0,20);
-
-  const commentHtml = (list)=> list.map(c=>{
-    const tr = truncateText(c.text, 140);
-    return `
-      <div class="panel" style="padding:12px; border-radius:14px; background:rgba(255,255,255,.02)">
-        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center">
-          <div><span style="font-weight:900">${esc(c.author||"User")}</span> <span class="muted">· ${esc(fmtDate(c.createdAt))}</span></div>
-          <div class="row">
-            <button class="btn small ${Number(c.likes||0)>0?'':'']}" data-likec="${esc(c.id)}">❤ ${Number(c.likes||0)}</button>
-          </div>
-        </div>
-        <div style="margin-top:8px" class="txt" data-full="${esc(c.text)}">${esc(tr.short)}</div>
-        ${tr.cut ? `<span class="moreBtn" data-more="1">顯示更多</span>` : ``}
-      </div>
-    `;
-  }).join("");
-
-  $("detailBody").innerHTML = `
-    <div class="panel">
-      <div class="sectionTitle">
-        <div>
-          <div style="font-weight:900">${esc(p.title)}</div>
-          <div class="muted" style="font-size:.92em">TAG：${esc(tagName(p.tag))} · 結算：${esc(fmtDate(p.settleDate))}</div>
-        </div>
-        <div class="row">
-          <button class="btn small ${p.likedByMe?'danger':''}" id="btnLikePredInDetail">❤ ${Number(p.likes||0)}</button>
-        </div>
-      </div>
-      <div style="padding:12px">
-        ${p.coverUrl ? `<div class="cover"><img src="${esc(p.coverUrl)}" alt="cover"/></div>` : ""}
-        <div style="height:12px"></div>
-        <div class="muted">總票數：${Number(p.totalVotes||0)}</div>
-        <div style="height:10px"></div>
-        <div class="panel" style="padding:12px; border-radius:14px; background:rgba(255,255,255,.02)">
-          <div style="font-weight:900; margin-bottom:8px">投票</div>
-          <div style="display:flex; flex-direction:column; gap:10px" id="optList">${opts}</div>
-          <div class="muted" style="margin-top:8px; font-size:.92em">（目前 demo 是 1 次投票 +1 票，之後你要加「投注 GC」再把 vote API 擴充。）</div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="panel" style="padding:12px; border-radius:14px; background:rgba(255,255,255,.02)">
-          <div style="font-weight:900; margin-bottom:8px">留言</div>
-          <div class="row">
-            <input class="input" id="commentText" placeholder="寫下你的留言（最多300字）" />
-            <button class="btn brand" id="btnSendComment">送出</button>
-          </div>
-          <div class="muted" style="margin-top:8px; font-size:.92em">點 ❤ 可按讚留言（可切換）。</div>
-        </div>
-
-        <div style="height:12px"></div>
-
-        <div class="panel">
-          <div class="sectionTitle">
-            <h3>留言檢視</h3>
-            <div class="row">
-              <span class="pill active" id="tabAll">全部留言</span>
-              <span class="pill" id="tabHot">熱門留言</span>
-            </div>
-          </div>
-          <div style="padding:12px; display:flex; flex-direction:column; gap:10px" id="commentList">
-            ${commentHtml(comments)}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // like prediction
-  $("btnLikePredInDetail").onclick = async ()=>{
-    if(!state.me){ showModal("authModal"); return; }
-    const rr = await api(`/api/predictions/${encodeURIComponent(p.id)}/like`, { method:"POST" });
-    if(!rr.ok){ toast(rr.error||"失敗"); return; }
-    openDetail(p.id); // refresh
-    loadFeed();
-  };
-
-  // vote
-  $("optList").onclick = async (e)=>{
-    const card = e.target.closest("[data-option]");
-    if(!card) return;
-    if(!state.me){ showModal("authModal"); return; }
-    const optionId = card.dataset.option;
-    const pred = card.dataset.pred;
-    const rr = await api(`/api/predictions/${encodeURIComponent(pred)}/vote`, {
-      method:"POST",
-      body: JSON.stringify({ optionId })
-    });
-    if(!rr.ok){ toast(rr.error||"投票失敗"); return; }
-    toast("投票成功");
-    openDetail(pred);
-    loadFeed();
-  };
-
-  // send comment
-  $("btnSendComment").onclick = async ()=>{
-    if(!state.me){ showModal("authModal"); return; }
-    const text = $("commentText").value.trim();
-    if(!text) return;
-    const rr = await api(`/api/predictions/${encodeURIComponent(p.id)}/comments`, {
-      method:"POST",
-      body: JSON.stringify({ text })
-    });
-    if(!rr.ok){ toast(rr.error||"留言失敗"); return; }
-    $("commentText").value = "";
-    openDetail(p.id);
-    loadFeed();
-  };
-
-  // like comment + expand
-  const commentList = $("commentList");
-  commentList.onclick = async (e)=>{
-    const more = e.target.closest("[data-more]");
-    if(more){
-      const box = more.parentElement;
-      const txt = box.querySelector(".txt");
-      txt.textContent = txt.dataset.full;
-      more.remove();
-      return;
-    }
-    const like = e.target.closest("[data-likec]");
-    if(like){
-      if(!state.me){ showModal("authModal"); return; }
-      const id = like.dataset.likec;
-      const rr = await api(`/api/comments/${encodeURIComponent(id)}/like`, { method:"POST" });
-      if(!rr.ok){ toast(rr.error||"失敗"); return; }
-      openDetail(p.id);
-      loadFeed();
-      return;
-    }
-  };
-
-  // tabs
-  $("tabAll").onclick = ()=>{
-    $("tabAll").classList.add("active"); $("tabHot").classList.remove("active");
-    commentList.innerHTML = commentHtml(comments);
-  };
-  $("tabHot").onclick = ()=>{
-    $("tabHot").classList.add("active"); $("tabAll").classList.remove("active");
-    commentList.innerHTML = commentHtml(hotComments);
-  };
-
-  showModal("detailModal");
-}
-
-/** =========================
- *  Ad claim
- *  ========================= */
-async function claimAd(){
-  if(!state.me){ showModal("authModal"); return; }
-  const r = await api("/api/claim-ad", { method:"POST" });
-  if(!r.ok){
-    if(r.error === "Cooldown"){
-      const mins = Math.ceil((r.remainingMs||0)/60000);
-      toast(`冷卻中，約 ${mins} 分鐘後可再領`);
-      return;
-    }
-    toast(r.error || "失敗");
-    return;
-  }
-  toast(`已領取 ${r.reward} GC，目前餘額：${r.newBalance}`);
-  await loadMe();
-}
-
-/** =========================
- *  Theme + font
- *  ========================= */
-function applyTheme(){
-  // demo：只做簡單明暗切換（亮模式仍維持深色基底，但提高對比）
-  const light = (state.theme === "light");
-  document.body.style.background = light ? "#070707" : "#000";
-}
-function toggleTheme(){
-  state.theme = (state.theme === "light") ? "dark" : "light";
-  localStorage.setItem("feex_theme", state.theme);
-  applyTheme();
-}
-function fontPlus(){
-  state.fontScale = Math.min(1.35, +(state.fontScale + 0.05).toFixed(2));
-  localStorage.setItem("feex_fontScale", String(state.fontScale));
-  document.documentElement.style.setProperty("--fontScale", String(state.fontScale));
-}
-function fontMinus(){
-  state.fontScale = Math.max(0.85, +(state.fontScale - 0.05).toFixed(2));
-  localStorage.setItem("feex_fontScale", String(state.fontScale));
-  document.documentElement.style.setProperty("--fontScale", String(state.fontScale));
-}
-function fontReset(){
-  state.fontScale = 1;
-  localStorage.setItem("feex_fontScale", "1");
-  document.documentElement.style.setProperty("--fontScale", "1");
-}
-
-/** =========================
- *  Wire up
- *  ========================= */
-function init(){
-  applyTheme();
-  buildHotTabs();
-  buildNav();
-  buildTags();
-
-  // token in URL (Google OAuth callback pattern: ?token=xxx)
-  const u = new URL(location.href);
-  const t = u.searchParams.get("token");
-  if(t){
-    state.token = t;
-    localStorage.setItem("feex_token", t);
-    u.searchParams.delete("token");
-    history.replaceState({}, "", u.toString());
-  }
-
-  $("btnOpenDrawer").onclick = openDrawer;
-  $("drawerShade").onclick = closeDrawer;
-  $("btnCloseDrawer").onclick = closeDrawer;
-
-  $("btnOpenAuth").onclick = ()=>showModal("authModal");
-  $("btnAuthLeft").onclick = ()=>showModal("authModal");
-
-  $("closeAuth").onclick = ()=>hideModal("authModal");
-  $("closeDetail").onclick = ()=>hideModal("detailModal");
-  $("closeProfile").onclick = ()=>hideModal("profileModal");
-  $("closeRules").onclick = ()=>hideModal("rulesModal");
-
-  $("btnRegister").onclick = doRegister;
-  $("btnLogin").onclick = doLogin;
-  $("btnGoogle").onclick = goGoogle;
-
-  $("btnRefresh").onclick = loadFeed;
-  $("qInput").oninput = ()=>{
-    state.q = $("qInput").value.trim();
-    // debounce
-    clearTimeout(window.__qT);
-    window.__qT = setTimeout(loadFeed, 250);
-  };
-
-  $("btnCreate").onclick = createPrediction;
-
-  $("btnClaimAd").onclick = claimAd;
-
-  $("btnProfile").onclick = openProfile;
-  $("btnRules").onclick = openRules;
-  $("btnLogout").onclick = ()=>{
-    state.token = "";
-    localStorage.removeItem("feex_token");
-    state.me = null;
-    renderMe();
-    toast("已登出");
-  };
-
-  $("btnLight").onclick = toggleTheme;
-  $("btnLight2").onclick = toggleTheme;
-
-  $("btnFontReset").onclick = fontReset;
-  $("btnFontReset2").onclick = fontReset;
-
-  $("fontPlus").onclick = fontPlus;
-  $("fontMinus").onclick = fontMinus;
-
-  $("btnSaveMe").onclick = saveProfile;
-
-  // close modal by clicking backdrop
-  ["authModal","detailModal","profileModal","rulesModal"].forEach(id=>{
-    $(id).addEventListener("click",(e)=>{ if(e.target === $(id)) hideModal(id); });
-  });
-
-  loadMe().then(loadFeed);
-}
-init();
+  setStatus();
 </script>
 </body>
 </html>
