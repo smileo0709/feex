@@ -22,10 +22,21 @@
     .left,.mid,.right{min-height:40px}
     .left .card,.right .card{position:sticky;top:14px}
     .nav{padding:12px}
+
+    /* Brand / Big F */
     .brand{display:flex;align-items:center;gap:10px;padding:10px 10px 14px}
-    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#1d9bf0,#7c3aed)}
+    .logoF{
+      width:38px;height:38px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#1d9bf0,#7c3aed);
+      font-weight:900;font-size:20px;color:#000;cursor:pointer;user-select:none;
+    }
     .brand b{font-size:18px}
-    .nav a,.nav button{display:flex;gap:10px;align-items:center;width:100%;padding:10px 12px;border-radius:12px;text-decoration:none;border:0;background:transparent;color:var(--text);cursor:pointer}
+    .nav a,.nav button{
+      display:flex;gap:10px;align-items:center;width:100%;
+      padding:10px 12px;border-radius:12px;text-decoration:none;
+      border:0;background:transparent;color:var(--text);cursor:pointer
+    }
     .nav a:hover,.nav button:hover{background:var(--panel2)}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:12px}
     .muted{color:var(--muted)}
@@ -64,8 +75,8 @@
     .rightBox{padding:12px}
     .rightBox h3{margin:0 0 10px;font-size:14px}
     .tagGrid{display:flex;gap:8px;flex-wrap:wrap}
-    .tag{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;color: var(--text);}
-    .tag.active{ background: var(--chip);color: var(--text);font-weight: 600;}
+    .tag{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;color:var(--text)}
+    .tag.active{background:var(--chip);color:var(--text);font-weight:600}
     .modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
     .modal{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
     .modalHeader{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
@@ -76,9 +87,28 @@
     .okbox{border-color:rgba(33,197,93,.35);color:#d7ffe7;background:rgba(33,197,93,.06)}
     .hide{display:none !important;}
 
+    /* Top-right persistent account */
+    .acctBar{
+      display:flex;align-items:center;gap:10px;
+    }
+    .miniAvatar{
+      width:28px;height:28px;border-radius:999px;background:#222;display:inline-block;
+    }
+    .gcPill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;background:var(--chip);
+      border:1px solid var(--line);color:var(--text);font-size:12px;
+    }
+    .gcPill span{color:var(--muted)}
+    .iconBtn{
+      border:1px solid var(--line);background:transparent;color:var(--text);
+      padding:7px 10px;border-radius:12px;cursor:pointer;font-size:13px;
+    }
+    .iconBtn:hover{background:var(--panel2)}
+
     /* mobile */
     @media (max-width: 980px){
-      .wrap{grid-template-columns: 82px 1fr; }
+      .wrap{grid-template-columns: 82px 1fr;}
       .right{display:none;}
       .navText{display:none;}
       .brand b{display:none;}
@@ -101,17 +131,22 @@
     <div class="left">
       <div class="card nav">
         <div class="brand">
-          <div class="logo"></div>
+          <div class="logoF" onclick="go('feed')" title="回到首頁">F</div>
           <b>FEEx</b>
         </div>
+
         <button onclick="go('feed')"><span>🏠</span><span class="navText">首頁</span></button>
         <button onclick="go('predict')"><span>🔮</span><span class="navText">未來事件預測</span></button>
+        <button onclick="go('history')"><span>🕰️</span><span class="navText">歷史事件預測</span></button>
         <button onclick="go('publish')"><span>🪙</span><span class="navText">看廣告拿金幣</span></button>
         <button onclick="go('profile')"><span>👤</span><span class="navText">個人檔案</span></button>
         <button onclick="go('rules')"><span>📜</span><span class="navText">規則 & 設定</span></button>
+
         <div class="sep"></div>
-        <button class="btn primary" onclick="openAuth()">登入 / 註冊</button>
-        <button class="btn ghost" onclick="logout()">登出</button>
+
+        <button id="btnLogin" class="btn primary" onclick="openAuth()">登入 / 註冊</button>
+        <button id="btnLogout" class="btn ghost hide" onclick="logout()">登出</button>
+
         <div class="sep"></div>
         <div class="pill">API: <span id="apiBase"></span></div>
         <div class="pill">狀態: <span id="statusText" class="muted">未登入</span></div>
@@ -123,7 +158,11 @@
       <div class="card">
         <div class="midHeader">
           <h1 id="pageTitle">首頁</h1>
-          <div class="row">
+
+          <!-- always visible account bar -->
+          <div class="acctBar">
+            <div id="acctGC" class="gcPill hide">🪙 <b id="acctGCNum">0</b> <span>GC</span></div>
+            <div id="acctAvatar" class="miniAvatar hide" title="已登入"></div>
             <button class="btn small" onclick="refresh()">刷新</button>
           </div>
         </div>
@@ -148,7 +187,22 @@
         <div id="page_feed" class="feed"></div>
 
         <div id="page_predict" class="feed hide" style="padding:14px">
-          <div class="notice">這裡展示「預測列表」與點進詳情（已由首頁 feed 連過去）。目前 demo 先用首頁。</div>
+          <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div class="notice" style="flex:1;min-width:260px">
+              這裡是「未來事件預測」分類頁（下一步我們會把「分類 + 本週總投票數」做進來）。<br>
+              你現在可以先用下方的「發布預測」功能（會打後端 /api/predictions）。
+            </div>
+            <button class="btn primary" onclick="openCreatePred()">發布預測（-1000 GC）</button>
+          </div>
+          <div class="sep"></div>
+          <div class="notice">目前列表先沿用首頁（之後會做：按分類篩選 + 顯示本週總投票數）。</div>
+        </div>
+
+        <div id="page_history" class="feed hide" style="padding:14px">
+          <div class="notice">
+            這裡是「歷史事件預測 Top 100」（下一步後端要補 /api/history 或 /api/predictions?status=settled&sort=totalVotes）。<br>
+            目前先保留入口，不影響你現有功能。
+          </div>
         </div>
 
         <div id="page_publish" class="feed hide" style="padding:14px">
@@ -161,41 +215,53 @@
 
         <div id="page_profile" class="feed hide" style="padding:14px">
           <div class="col">
-            <div class="notice">個人檔案（暱稱/簽名/勝率/等級/GC/會員等級）。修改會打 /api/me PATCH。</div>
-            <div class="row" style="gap:12px;flex-wrap:wrap">
-              <div style="flex:1;min-width:240px">
-                <div class="muted" style="margin-bottom:6px">暱稱（20字內）</div>
-                <input id="meNick" class="input" placeholder="Nick" />
-              </div>
-              <div style="flex:1;min-width:240px">
-                <div class="muted" style="margin-bottom:6px">個人簽名（140字內）</div>
-                <input id="meBio" class="input" placeholder="Bio" />
-              </div>
+            <div class="notice">
+              個人檔案：只允許改「暱稱 / 個人簽名」。<br>
+              Tier / Level / 勝率 / GC 為系統計算（前端先做唯讀顯示；下一步後端也會鎖住不可被 PATCH 修改）。
             </div>
 
-            <div class="row" style="gap:12px;flex-wrap:wrap">
-              <div style="flex:1;min-width:160px">
-                <div class="muted" style="margin-bottom:6px">會員等級 Tier</div>
-                <input id="meTier" class="input" type="number" min="1" max="10" />
-              </div>
-              <div style="flex:1;min-width:160px">
-                <div class="muted" style="margin-bottom:6px">等級 Level</div>
-                <input id="meLevel" class="input" type="number" min="1" max="999" />
-              </div>
-              <div style="flex:1;min-width:160px">
-                <div class="muted" style="margin-bottom:6px">預測勝率 %</div>
-                <input id="meWin" class="input" type="number" min="0" max="100" />
-              </div>
-              <div style="flex:1;min-width:160px">
-                <div class="muted" style="margin-bottom:6px">金幣 GC</div>
-                <input id="meGC" class="input" type="number" disabled />
-              </div>
-            </div>
-
+            <!-- display stats (read-only) -->
             <div class="row" style="gap:10px;flex-wrap:wrap">
+              <span class="pill">Tier：<b id="meTierText">1</b></span>
+              <span class="pill">Level：<b id="meLevelText">1</b></span>
+              <span class="pill">勝率：<b id="meWinText">0</b>%</span>
+              <span class="pill">GC：<b id="meGCText">0</b></span>
+            </div>
+
+            <div class="sep"></div>
+
+            <!-- editable nick/bio -->
+            <div class="row" style="gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:240px">
+                <div class="row" style="justify-content:space-between;align-items:end">
+                  <div class="muted" style="margin-bottom:6px">暱稱（20字內）</div>
+                  <button class="iconBtn" onclick="toggleEdit('nick')">編輯</button>
+                </div>
+                <input id="meNick" class="input" placeholder="Nick" disabled />
+                <div class="muted" style="font-size:12px;margin-top:6px">
+                  暱稱免費更改 1 次，之後每次 300 GC（前端先提示；下一步後端會實作扣款/限制）。
+                </div>
+              </div>
+
+              <div style="flex:1;min-width:240px">
+                <div class="row" style="justify-content:space-between;align-items:end">
+                  <div class="muted" style="margin-bottom:6px">個人簽名（140字內）</div>
+                  <button class="iconBtn" onclick="toggleEdit('bio')">編輯</button>
+                </div>
+                <input id="meBio" class="input" placeholder="Bio" disabled />
+              </div>
+            </div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:6px">
               <button class="btn primary" onclick="saveMe()">儲存</button>
               <button class="btn" onclick="loadMe()">重新載入</button>
               <span id="meMsg" class="notice hide"></span>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="notice">
+              （下一步）這裡會顯示：你發過的預測清單 + 管理功能（編輯/結算/刪除規則等）。
             </div>
           </div>
         </div>
@@ -203,11 +269,17 @@
         <div id="page_rules" class="feed hide" style="padding:14px">
           <div class="col">
             <div class="notice">
-              <b>規則 & 設定（給使用者看的）</b><br><br>
+              <b>規則（你之後可自行補充/改字）</b><br><br>
               • GC 是平台內點數，不可兌換回任何法幣/代幣。<br>
               • 預測僅供娛樂與社群互動，結果可能不準確。<br>
               • 參與前請自行評估風險，勿投入超出承受範圍的 GC。<br>
-              • 平台可能調整規則/參數以維護公平性與安全性。<br>
+              • 發布預測需支付 1000 GC（不可退）。<br>
+              • 系統可能調整參數以維護公平性與安全性。<br>
+              <br>
+              <b>設定（先保留入口）</b><br>
+              • 開燈 / 關燈<br>
+              • 字體大小<br>
+              • 之後可加：內容過濾、隱藏某些分類、隱藏已結算等
             </div>
             <div class="row">
               <span class="pill">顯示設定</span>
@@ -267,8 +339,7 @@
 
         <div class="notice">
           <b>Google 登入</b><br>
-          你後端若已完成 Google OAuth 路由（例如 /api/auth/google/start /callback），把下面按鈕的連結改成你的路由即可。
-          如果你後端目前還沒有 Google OAuth 路由，先不要按也沒關係。
+          會導向後端：<code>/api/auth/google/start</code>。
         </div>
         <button class="btn" onclick="googleStart()">使用 Google 登入</button>
       </div>
@@ -287,9 +358,64 @@
   </div>
 </div>
 
+<!-- CREATE PREDICTION MODAL -->
+<div id="createPredBackdrop" class="modalBackdrop">
+  <div class="modal">
+    <div class="modalHeader">
+      <b>發布預測（-1000 GC）</b>
+      <button class="btn small" onclick="closeCreatePred()">✕</button>
+    </div>
+    <div class="modalBody">
+      <div id="createPredMsg" class="notice hide"></div>
+
+      <div class="col">
+        <div>
+          <div class="muted" style="margin-bottom:6px">標題（5~120字）</div>
+          <input id="cpTitle" class="input" placeholder="例如：2025/12/25 湖人 vs 勇士 誰會獲勝？" />
+        </div>
+
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div class="muted" style="margin-bottom:6px">分類 TAG</div>
+            <select id="cpTag" class="input">
+              <option value="sport">運動</option>
+              <option value="news">時勢</option>
+              <option value="politics">政治</option>
+              <option value="tech">科技</option>
+              <option value="finance">金融</option>
+              <option value="ent">娛樂</option>
+              <option value="games">遊戲</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div class="muted" style="margin-bottom:6px">結算日（YYYY-MM-DD）</div>
+            <input id="cpSettle" class="input" placeholder="2026-01-01" />
+          </div>
+        </div>
+
+        <div>
+          <div class="muted" style="margin-bottom:6px">封面圖片 URL（可空）</div>
+          <input id="cpCover" class="input" placeholder="https://..." />
+        </div>
+
+        <div class="notice">
+          選項至少 2 個、最多 12 個（每行 1 個）。<br>
+          例：湖人 / 勇士
+        </div>
+        <textarea id="cpOptions" class="input" rows="6" placeholder="選項1&#10;選項2"></textarea>
+
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+          <button class="btn primary" onclick="submitCreatePred()">確認發布</button>
+          <button class="btn ghost" onclick="closeCreatePred()">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ====== CONFIG ======
-  const API_BASE = "https://api.feex.win"; // 你的 Worker API 網域（不要重複宣告）
+  const API_BASE = "https://api.feex.win";
   document.getElementById("apiBase").textContent = API_BASE.replace("https://","");
 
   // ====== 0) Google OAuth 回來的 token：/#token=xxxx ======
@@ -316,6 +442,8 @@
     hot: "day",
     token: localStorage.getItem("token") || "",
     me: null,
+    editNick: false,
+    editBio: false,
   };
 
   // ====== HELPERS ======
@@ -332,14 +460,13 @@
   function fmtTime(ms){
     try { return new Date(Number(ms)).toLocaleString(); } catch { return ""; }
   }
-
   function escapeHtml(s){
     return String(s||"").replace(/[&<>"']/g, (c)=>({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[c]));
   }
 
-  // ====== API WRAPPER（唯一一套）======
+  // ====== API WRAPPER ======
   async function api(path, { method="GET", body=null, auth=true } = {}) {
     const headers = { "Content-Type": "application/json" };
     if (auth) {
@@ -362,7 +489,7 @@
   // ====== NAV ======
   function go(page){
     state.page = page;
-    ["feed","predict","publish","profile","rules"].forEach(p=>{
+    ["feed","predict","history","publish","profile","rules"].forEach(p=>{
       const el = $("page_"+p);
       if(!el) return;
       if(p===page) el.classList.remove("hide");
@@ -372,6 +499,7 @@
     $("pageTitle").textContent =
       page==="feed" ? "首頁" :
       page==="predict" ? "未來事件預測" :
+      page==="history" ? "歷史事件預測" :
       page==="publish" ? "看廣告拿金幣" :
       page==="profile" ? "個人檔案" : "規則 & 設定";
 
@@ -436,37 +564,80 @@
   window.logout = logout;
 
   function googleStart(){
-    // 直接導向後端 start 路由
     window.location.href = API_BASE + "/api/auth/google/start";
   }
   window.googleStart = googleStart;
 
-  // ====== ME ======
+  // ====== PROFILE edit toggle ======
+  function toggleEdit(which){
+    if(which==="nick"){
+      state.editNick = !state.editNick;
+      $("meNick").disabled = !state.editNick;
+      if(state.editNick) $("meNick").focus();
+    }
+    if(which==="bio"){
+      state.editBio = !state.editBio;
+      $("meBio").disabled = !state.editBio;
+      if(state.editBio) $("meBio").focus();
+    }
+  }
+  window.toggleEdit = toggleEdit;
+
+  // ====== ME / STATUS ======
+  function applyAccountBar(){
+    const isIn = !!state.me;
+    $("acctGC").classList.toggle("hide", !isIn);
+    $("acctAvatar").classList.toggle("hide", !isIn);
+    if(isIn){
+      $("acctGCNum").textContent = String(state.me.gc ?? 0);
+    }
+  }
+
   function setStatus(){
-    const t = state.me
+    const isIn = !!state.me;
+    const t = isIn
       ? `已登入：${state.me.nick}（Tier ${state.me.tier} / GC ${state.me.gc}）`
       : "未登入";
     $("statusText").textContent = t;
-    $("statusText").className = state.me ? "ok" : "muted";
+    $("statusText").className = isIn ? "ok" : "muted";
+
+    // login/logout buttons
+    $("btnLogin").classList.toggle("hide", isIn);
+    $("btnLogout").classList.toggle("hide", !isIn);
+
+    applyAccountBar();
   }
 
   async function loadMe(){
     const t = state.token || localStorage.getItem("token") || "";
-    if(!t){ state.me=null; setStatus(); return; }
+    if(!t){
+      state.me=null;
+      setStatus();
+      return;
+    }
 
     try{
       const data = await api("/api/me", {method:"GET", auth:true});
       state.me = data.user;
-      setStatus();
 
+      // fill read-only stats
+      $("meTierText").textContent = String(state.me.tier ?? 1);
+      $("meLevelText").textContent = String(state.me.level ?? 1);
+      $("meWinText").textContent = String(state.me.winRate ?? 0);
+      $("meGCText").textContent = String(state.me.gc ?? 0);
+
+      // fill editable fields
       $("meNick").value = state.me.nick || "";
       $("meBio").value = state.me.bio || "";
-      $("meTier").value = state.me.tier || 1;
-      $("meLevel").value = state.me.level || 1;
-      $("meWin").value = state.me.winRate ?? 50;
-      $("meGC").value = state.me.gc ?? 0;
+
+      // disable by default
+      state.editNick = false;
+      state.editBio = false;
+      $("meNick").disabled = true;
+      $("meBio").disabled = true;
+
+      setStatus();
     }catch(e){
-      // token 失效
       state.token="";
       localStorage.removeItem("token");
       state.me=null;
@@ -479,20 +650,45 @@
     if(!state.token) return alert("請先登入");
     clearMsg($("meMsg"));
 
-    const body = {
-      nick: $("meNick").value.trim(),
-      bio: $("meBio").value.trim(),
-      tier: Number($("meTier").value||1),
-      level: Number($("meLevel").value||1),
-      winRate: Number($("meWin").value||50),
-    };
+    const newNick = $("meNick").value.trim().slice(0,20);
+    const newBio = $("meBio").value.trim().slice(0,140);
+
+    // 前端先做「暱稱免費一次」提示（真正扣款/限制下一步做後端）
+    const nickChanged = state.me && (newNick !== (state.me.nick || ""));
+    if(nickChanged){
+      const used = Number(localStorage.getItem("nickChangeUsed") || "0");
+      if(used >= 1){
+        // 第二次之後提醒
+        const ok = confirm("暱稱已使用過免費更改一次。下一次應扣 300 GC（後端下一步會加入扣款與限制）。要繼續嗎？");
+        if(!ok) return;
+      }
+    }
+
+    const body = { nick: newNick, bio: newBio }; // ✅ 不送 tier/level/winRate
 
     try{
       const data = await api("/api/me", {method:"PATCH", body, auth:true});
       state.me = data.user;
-      $("meGC").value = state.me.gc ?? 0;
+
+      // 更新顯示
+      $("meTierText").textContent = String(state.me.tier ?? 1);
+      $("meLevelText").textContent = String(state.me.level ?? 1);
+      $("meWinText").textContent = String(state.me.winRate ?? 0);
+      $("meGCText").textContent = String(state.me.gc ?? 0);
+
+      // 記錄免費暱稱次數（僅前端）
+      if(nickChanged){
+        const used = Number(localStorage.getItem("nickChangeUsed") || "0");
+        localStorage.setItem("nickChangeUsed", String(used + 1));
+      }
+
       setStatus();
       setMsg($("meMsg"), "已儲存", "ok");
+
+      // 存完回到唯讀
+      state.editNick = false; state.editBio = false;
+      $("meNick").disabled = true;
+      $("meBio").disabled = true;
     }catch(e){
       setMsg($("meMsg"), e.message || "儲存失敗", "err");
     }
@@ -509,8 +705,6 @@
       await loadMe();
       setMsg($("claimMsg"), `成功 +${data.reward} GC，目前餘額：${data.newBalance}`, "ok");
     }catch(e){
-      // 你後端 cooldown 會回 409 + {error:"Cooldown", remainingMs}
-      // 但我們這裡 catch 只有 message，所以簡單提示：
       setMsg($("claimMsg"), e.message || "領取失敗", "err");
     }
   }
@@ -653,7 +847,7 @@
     $("detailBody").innerHTML = `<div class="muted">loading...</div>`;
 
     try{
-      const data = await api("/api/predictions/"+predId, {method:"GET", auth: !!state.token});
+      const data = await api("/api/predictions/"+predId, {method:"GET", auth: !!(state.token)});
       const p = data.prediction;
 
       $("detailTitle").textContent = p.title;
@@ -664,11 +858,13 @@
         return `<button class="btn" style="width:100%;text-align:left" onclick="doVote('${predId}','${o.id}')">🗳️ ${escapeHtml(o.text)} · ${o.votes}${my}</button>`;
       }).join("");
 
-      const comments = (p.comments||[]).slice(0,200).map(c=>{
+      const comments = (p.comments||[]).slice(0,200).map((c,i)=>{
+        // 你要求留言編號：B1, B2, ...
+        const idx = "B" + (i+1);
         return `
           <div style="padding:10px 0;border-top:1px solid var(--line)">
             <div class="row" style="justify-content:space-between">
-              <div><b>@${escapeHtml(c.author)}</b> <span class="meta">· ${fmtTime(c.createdAt)}</span></div>
+              <div><b>${idx} · @${escapeHtml(c.author)}</b> <span class="meta">· ${fmtTime(c.createdAt)}</span></div>
               <button class="btn small" onclick="likeComment('${c.id}')">❤️ ${c.likes}</button>
             </div>
             <div style="margin-top:6px;white-space:pre-wrap">${escapeHtml(c.text)}</div>
@@ -759,6 +955,60 @@
   }
   window.likeComment = likeComment;
 
+  // ====== CREATE PREDICTION ======
+  function openCreatePred(){
+    if(!state.token) return openAuth();
+    $("createPredBackdrop").style.display="flex";
+    clearMsg($("createPredMsg"));
+    $("cpTitle").value = "";
+    $("cpCover").value = "";
+    $("cpOptions").value = "選項1\n選項2";
+    $("cpTag").value = "sport";
+    $("cpSettle").value = "";
+  }
+  function closeCreatePred(){
+    $("createPredBackdrop").style.display="none";
+  }
+  window.openCreatePred = openCreatePred;
+  window.closeCreatePred = closeCreatePred;
+
+  async function submitCreatePred(){
+    clearMsg($("createPredMsg"));
+
+    const title = $("cpTitle").value.trim();
+    const tag = $("cpTag").value.trim();
+    const settleDate = $("cpSettle").value.trim();
+    const coverUrl = $("cpCover").value.trim();
+
+    const options = $("cpOptions").value
+      .split("\n")
+      .map(s=>s.trim())
+      .filter(Boolean)
+      .slice(0,12);
+
+    if(title.length < 5 || title.length > 120) return setMsg($("createPredMsg"), "標題需 5~120 字", "err");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(settleDate)) return setMsg($("createPredMsg"), "結算日格式需 YYYY-MM-DD", "err");
+    if(options.length < 2) return setMsg($("createPredMsg"), "選項至少 2 個", "err");
+
+    try{
+      const data = await api("/api/predictions", {
+        method:"POST",
+        body:{ title, tag, settleDate, coverUrl, options },
+        auth:true
+      });
+      setMsg($("createPredMsg"), "發布成功！", "ok");
+      closeCreatePred();
+      // 刷新帳戶與首頁
+      await loadMe();
+      go("feed");
+      await refresh();
+      alert("發布成功！");
+    }catch(e){
+      setMsg($("createPredMsg"), e.message || "發布失敗", "err");
+    }
+  }
+  window.submitCreatePred = submitCreatePred;
+
   // ====== SETTINGS ======
   function toggleTheme(){
     const r = document.documentElement.style;
@@ -793,7 +1043,7 @@
   // ====== INIT ======
   renderTags();
   go("feed");
-  loadMe();
+  loadMe();   // 會更新右上角 GC/頭貼、登入/登出按鈕顯示
   setStatus();
 </script>
 
